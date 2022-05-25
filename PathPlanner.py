@@ -10,7 +10,7 @@ See Wikipedia article (https://en.wikipedia.org/wiki/A*_search_algorithm)
 """
 
 import math
-
+import numpy as np
 import matplotlib.pyplot as plt
 
 show_animation = True
@@ -232,19 +232,22 @@ class AStarPlanner:
 def get_path(sx, sy, gx, gy, mx, my, obstacle):
     prec = 0.01
 
+    ox = []
+    oy = []
+
     for pos in obstacle:
-        for x in range(pos[0], pos[2], prec):
-            for y in range(pos[1], pos[3], prec):
+        for x in np.arange(pos[0], pos[2], prec):
+            for y in np.arange(pos[1], pos[3], prec):
                 ox.append(x)
                 oy.append(y)
 
-    for x in range(0, mx, prec):
+    for x in np.arange(0, mx, prec):
         ox.append(x)
         oy.append(0)
         ox.append(x)
         oy.append(my)
 
-    for y in range(0, my, prec):
+    for y in np.arange(0, my, prec):
         ox.append(0)
         oy.append(y)
         ox.append(mx)
@@ -257,6 +260,8 @@ def get_path(sx, sy, gx, gy, mx, my, obstacle):
         plt.grid(True)
         plt.axis("equal")
 
+    grid_size = 0.01
+    robot_radius = 0.30
     a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
     rx, ry = a_star.planning(sx, sy, gx, gy)
 
