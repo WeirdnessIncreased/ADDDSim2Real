@@ -74,7 +74,9 @@ for ob in dynamic_obstacles:
 
 sx, sy = vector_data[0][0], vector_data[0][1]
 gx, gy = vector_data[5][0], vector_data[5][1]
+gy -= 0.5
 mx, my = map_size[0], map_size[1]
 obstacles = list(zip(ox1, oy1, ox2, oy2))
-
+#print("          ",vector_data[5])
 PathPlanner.get_path(sx, sy, gx, gy, mx, my, obstacles)
+PathPlanner.get_path(gx, gy, vector_data[6][0], vector_data[6][1] - 0.5, mx, my, obstacles)
