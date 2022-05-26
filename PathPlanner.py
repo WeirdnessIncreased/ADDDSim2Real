@@ -13,7 +13,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
-show_animation = True
+show_animation = False
 
 
 class AStarPlanner:
@@ -193,15 +193,15 @@ class AStarPlanner:
         self.min_y = round(min(oy))
         self.max_x = round(max(ox))
         self.max_y = round(max(oy))
-        print("min_x:", self.min_x)
-        print("min_y:", self.min_y)
-        print("max_x:", self.max_x)
-        print("max_y:", self.max_y)
+        # print("min_x:", self.min_x)
+        # print("min_y:", self.min_y)
+        # print("max_x:", self.max_x)
+        # print("max_y:", self.max_y)
 
         self.x_width = round((self.max_x - self.min_x) / self.resolution)
         self.y_width = round((self.max_y - self.min_y) / self.resolution)
-        print("x_width:", self.x_width)
-        print("y_width:", self.y_width)
+        # print("x_width:", self.x_width)
+        # print("y_width:", self.y_width)
 
         # obstacle map generation
         self.obstacle_map = [[False for _ in range(self.y_width)]
@@ -263,7 +263,7 @@ def get_path(sx, sy, gx, gy, mx, my, obstacle):
 
     grid_size = 0.05
     robot_radius = 0.30
-    goal_prec = 0.50 / grid_size
+    goal_prec = 0.30 / grid_size
     a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
     rx, ry = a_star.planning(sx, sy, gx, gy, goal_prec)
 
@@ -271,6 +271,8 @@ def get_path(sx, sy, gx, gy, mx, my, obstacle):
         plt.plot(rx, ry, "-r")
         plt.pause(0.001)
         plt.show()
+
+    return rx, ry
 
 
 def main():
