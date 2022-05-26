@@ -7,7 +7,7 @@ from Cogenvdecoder.CogEnvDecoder import CogEnvDecoder
 
 num_episodes = 10
 num_steps_per_episode = 500
-env = CogEnvDecoder(env_name="linux_v2/cog_sim2real_env.x86_64", no_graphics=False, time_scale=1, worker_id=1) # linux os
+env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=1) 
 
 robot = None
 
