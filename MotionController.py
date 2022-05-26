@@ -119,11 +119,11 @@ def rear_wheel_feedback_control(state, e, k, yaw_ref):
     return delta
 
 
-def simulate(path_ref, goal):
+def simulate(path_ref, goal, sx, sy):
     T = 500.0  # max simulation time
     goal_dis = 0.30
 
-    state = State(x=-0.0, y=-0.0, yaw=0.0, v=0.0)
+    state = State(x=sx, y=sy, yaw=0.0, v=0.0)
 
     time = 0.0
     x = [state.x]
@@ -190,16 +190,14 @@ def calc_target_speed(state, yaw_ref):
 
     return target_speed
 
-def main():
+def visualize(ax, ay, sx, sy):
     print("rear wheel feedback tracking start!!")
-    ax = [0.0, 6.0, 12.5, 5.0, 7.5, 3.0, -1.0]
-    ay = [0.0, 0.0, 5.0, 6.5, 3.0, 5.0, -2.0]
     goal = [ax[-1], ay[-1]]
 
     reference_path = CubicSplinePath(ax, ay)
     s = np.arange(0, reference_path.length, 0.1)
 
-    t, x, y, yaw, v, goal_flag = simulate(reference_path, goal)
+    t, x, y, yaw, v, goal_flag = simulate(reference_path, goal, sx, sy)
 
     # Test
     assert goal_flag, "Cannot goal"
@@ -222,6 +220,48 @@ def main():
         plt.legend()
         plt.xlabel("line length[m]")
         plt.ylabel("yaw angle[deg]")
+
+        plt.subplots(1)
+        plt.plot(s, reference_path.calc_curvature(s), "-r", label="curvature")
+        plt.grid(True)
+        plt.legend()
+        plt.xlabel("line length[m]")
+        plt.ylabel("curvature [1/m]")
+
+        plt.show()
+
+def main():
+    print("rear wheel feedback tracking start!!")
+    ax = [0.0, 6.0, 12.5, 5.0, 7.5, 3.0, -1.0]
+    ay = [0.0, 0.0, 5.0, 6.5, 3.0, 5.0, -2.0]
+    goal = [ax[-1], ay[-1]]
+
+    reference_path = CubicSplinePath(ax, ay)
+    s = np.arange(0, reference_path.length, 0.1)
+
+    t, x, y, yaw, v, goal_flag = simulate(reference_path, goal)
+
+    # Test
+    assert goal_flag, "Cannot goal"
+
+    if show_animation:  # pragma: no cover
+        # plt.close()
+        # plt.subplots(1)
+        # plt.plot(ax, ay, "xb", label="input")
+        # plt.plot(reference_path.X(s), reference_path.Y(s), "-r", label="spline")
+        # plt.plot(x, y, "-g", label="tracking")
+        # plt.grid(True)
+        # plt.axis("equal")
+        # plt.xlabel("x[m]")
+        # plt.ylabel("y[m]")
+        # plt.legend()
+
+        # plt.subplots(1)
+        # plt.plot(s, np.rad2deg(reference_path.calc_yaw(s)), "-r", label="yaw")
+        # plt.grid(True)
+        # plt.legend()
+        # plt.xlabel("line length[m]")
+        # plt.ylabel("yaw angle[deg]")
 
         plt.subplots(1)
         plt.plot(s, reference_path.calc_curvature(s), "-r", label="curvature")

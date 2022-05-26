@@ -72,7 +72,11 @@ class Robot:
         obstacles = list(zip(ox1, oy1, ox2, oy2))
 
         path_x, path_y = PathPlanner.get_path(sx, sy, gx, gy, mx, my, obstacles)
+        path_x = path_x[::-1]
+        path_y = path_y[::-1]
         self.path = MotionController.CubicSplinePath(path_x, path_y)
+
+        # MotionController.visualize(path_x, path_y, sx, sy)
 
         print(f"=== Updated path for goal [{tar + 1}]")
 
