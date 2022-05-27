@@ -1,9 +1,7 @@
 import math
 import PathPlanner
 import numpy as np
-import MotionController
-import Controller2
-import Controller4
+import Controller1
 
 fixed_obstacle = {
     'B1': [ 7.08, 1.00, 8.08, 1.2],
@@ -37,7 +35,6 @@ class Robot:
 
         vector_data = obs["vector"]
         sx, sy = vector_data[0][0], vector_data[0][1]
-        self.state = MotionController.State(x=sx, y=sy, yaw=0.0, v=0.0)
         self.x = sx
         self.y = sy
 
