@@ -35,7 +35,6 @@ class AStarPlanner:
         self.obstacle_map = None
         self.x_width, self.y_width = 0, 0
         self.motion = self.get_motion_model()
-        print("=== Calculating obstacle map")
         self.calc_obstacle_map(ox, oy)
 
     class Node:
@@ -96,7 +95,6 @@ class AStarPlanner:
                     plt.pause(0.001)
 
             if abs(current.x -  goal_node.x) < goal_prec and abs(current.y - goal_node.y) < goal_prec:
-                print("Find goal")
                 goal_node.parent_index = current.parent_index
                 goal_node.cost = current.cost
                 break
@@ -230,30 +228,9 @@ class AStarPlanner:
 
         return motion
 
-def get_path(sx, sy, gx, gy, mx, my, obstacle):
+def get_path(sx, sy, gx, gy, mx, my, ox, oy):
     prec = 0.05
 
-    ox = []
-    oy = []
-
-    for pos in obstacle:
-        for x in np.arange(pos[0], pos[2], prec):
-            for y in np.arange(pos[1], pos[3], prec):
-                ox.append(x)
-                oy.append(y)
-
-    for x in np.arange(0, mx, prec):
-        ox.append(x)
-        oy.append(0)
-        ox.append(x)
-        oy.append(my)
-
-    for y in np.arange(0, my, prec):
-        ox.append(0)
-        oy.append(y)
-        ox.append(mx)
-        oy.append(y)
-                
     if show_animation:  # pragma: no cover
         plt.plot(ox, oy, ".k")
         plt.plot(sx, sy, "og")
@@ -263,7 +240,7 @@ def get_path(sx, sy, gx, gy, mx, my, obstacle):
 
     grid_size = 0.05
     robot_radius = 0.15
-    goal_prec = 0.50 / grid_size
+    goal_prec = 0.15 / grid_size
     a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
     rx, ry = a_star.planning(sx, sy, gx, gy, goal_prec)
 

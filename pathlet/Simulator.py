@@ -1,3 +1,5 @@
+import pickle
+import sys
 import numpy as np
 import PathPlanner
 import matplotlib.pyplot as plt
@@ -54,14 +56,22 @@ def get_obstacle():
 
 def get_critical():
     map_size = [8.08, 4.48]
+    
+    ox, oy, obstacle = get_obstacle()
 
     xx, yy = [], []
     xx_ = np.arange(0, map_size[0], map_size[0] / 20)
     yy_ = np.arange(0, map_size[1], map_size[1] / 10)
 
+    def is_in_obstacle(x, y):
+        for ob in obstacle:
+            if x >= ob[0] and x <= ob[2] and y >= ob[1] and y <= ob[3]:
+                return True
+        return False
+
     for x in xx_:
         for y in yy_:
-            if x == 0 or y == 0: continue
+            if x == 0 or y == 0 or is_in_obstacle(x, y): continue
             xx.append(x)
             yy.append(y)
 
@@ -72,19 +82,35 @@ if __name__ == '__main__':
 
     ox, oy, obstacles = get_obstacle()
     xx, yy = get_critical()
-    print(xx)
+
+    # print(xx)
+    # plt.plot(ox, oy, ".k")
+    # plt.plot(xx, yy, "og")
+    # plt.grid(True)
+    # plt.axis("equal")
+    # plt.show()
+
+    cnt = 1
+    total = (len(xx) * len(yy) - len(xx)) / 2
+
+    pathlets = {}
 
     for idx1, pos1 in enumerate(list(zip(xx, yy))):
         x1, y1 = pos1[0], pos1[1]
         for idx2, pos2 in enumerate(list(zip(xx, yy))):
-            if idx2 == idx1: continue
+            if idx2 <= idx1: continue
+            print(f"Processing {cnt}/{total}", end="\r")
+            sys.stdout.flush()
             x2, y2 = pos2[0], pos2[1]
-            path_x, path_y = PathPlanner.get_path(x1, y1, x2, y2, mx, my, obstacles)
+            path_x, path_y = PathPlanner.get_path(x1, y1, x2, y2, mx, my, ox, oy)
+            pathlets[(x1, y1, x2, y2)] = (path_x, path_y)
+            cnt += 1
+            if cnt == 3:
+                break
+        if cnt == 3:
+            break
 
-    plt.plot(ox, oy, ".k")
-    plt.plot(xx, yy, "og")
-    # plt.plot(gx, gy, "xb")
-    plt.grid(True)
-    plt.axis("equal")
+    with open("pathlets", "wb") as fs:
+        pickle.dump(pathlets, fs)
 
-    plt.show()
+    print("Finished (=ﾟωﾟ)ﾉ        ")
