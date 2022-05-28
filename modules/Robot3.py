@@ -48,7 +48,6 @@ class Robot:
 
         vector_data = obs["vector"]
         sx, sy = vector_data[0][0], vector_data[0][1]
-        self.ang = vector_data[0][2]
         self.state = Controller3.State(x=sx, y=sy, yaw=np.radians(20.0), v=0.0)
 
         dynamic_obstacles = [vector_data[5][:2], vector_data[6][:2], vector_data[7][:2], vector_data[8][:2], vector_data[9][:2]]
@@ -117,20 +116,17 @@ class Robot:
 
         print(f"=== Updated path for goal [{tar + 1}]")
 
-    def get_activation_action(self, ang):
+    def get_activation_action(self):
         ai = Controller3.pid_control(target_speed, self.state.v)
         di, self.target_idx = Controller3.stanley_control(self.state, self.cx, self.cy, self.cyaw, self.target_idx)
 
-        ang = self.ang - ang
         di = np.clip(di, -max_steer, max_steer)
 
         self.state.yaw += self.state.v / L * np.tan(di) * dt
         self.state.yaw = Controller3.normalize_angle(self.state.yaw)
         self.state.v += ai * dt
-        vx = self.state.v * np.cos(self.state.yaw)
-        vy = self.state.v * np.sin(self.state.yaw)
-        tar_v_x = math.cos(-ang) * vx - math.sin(-ang) * vy 
-        tar_v_y = math.sin(-ang) * vx + math.cos(-ang) * vy
+        tar_v_x = self.state.v * np.cos(self.state.yaw)
+        tar_v_y = self.state.v * np.sin(self.state.yaw)
 
         return [tar_v_x, tar_v_y, 0, 0]
 
