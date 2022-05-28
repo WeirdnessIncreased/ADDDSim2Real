@@ -21,7 +21,6 @@ for i in range(num_episodes):
     robot = Robot(obs)
 
     last_activation_tar = -1
-    ang0 = obs["vector"][0][2]
     for j in range(num_steps_per_episode):
         activation_tar = robot.check_activation(obs)
         cum_rotation = 0
@@ -30,7 +29,7 @@ for i in range(num_episodes):
                 robot.update_activation_path(obs, activation_tar)
                 last_activation_tar = activation_tar
             if math.hypot(obs["vector"][0][0] - obs["vector"][5 + activation_tar][0], obs["vector"][0][1] - obs["vector"][5 + activation_tar][1]) > goal_prec:
-                action = robot.get_activation_action(ang0)
+                action = robot.get_activation_action()
             else:
                 rotation = robot.get_activation_rotation(obs, activation_tar)
                 action[2] = rotation
