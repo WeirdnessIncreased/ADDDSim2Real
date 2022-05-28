@@ -1,8 +1,8 @@
 import cv2
 import math
 import numpy as np
-from Robot1 import Robot
-import PathPlanner as PathPlanner
+from modules.Robot1 import Robot
+from modules import PathPlanner as PathPlanner
 from Cogenvdecoder.CogEnvDecoder import CogEnvDecoder
 
 np.random.seed(19260817)

@@ -1,8 +1,8 @@
 import cv2
 import math
 import numpy as np
-from Robot3 import Robot
-import PathPlanner as PathPlanner
+from modules.Robot3 import Robot
+from modules import PathPlanner as PathPlanner
 from Cogenvdecoder.CogEnvDecoder import CogEnvDecoder
 
 num_episodes = 10

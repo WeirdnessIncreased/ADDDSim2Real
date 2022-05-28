@@ -1,17 +1,10 @@
 import math
-import PathPlanner
-import MotionController
-import Controller2
-import Controller3
+from modules import Controller3, PathPlanner
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import os
-
-try:
-    import cubic_spline_planner
-except:
-    raise
+from modules import cubic_spline_planner
 
 fixed_obstacle = {
     'B1': [ 7.08, 1.00, 8.08, 1.2],

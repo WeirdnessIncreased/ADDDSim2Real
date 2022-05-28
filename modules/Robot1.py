@@ -1,7 +1,7 @@
 import math
-import PathPlanner
+from modules import PathPlanner
 import numpy as np
-import Controller1
+from modules import Controller1
 
 fixed_obstacle = {
     'B1': [ 7.08, 1.00, 8.08, 1.2],
@@ -103,7 +103,7 @@ class Robot:
         if stheta < 0: stheta = 2 * math.pi + stheta
 
         if gx > sx and gy > sy:
-            w = (tar_theta - stheta) / dt
+            w = - (tar_theta - stheta) / dt
             print("1")
         elif gx < sx and gy > sy:
             w = (math.pi + tar_theta - stheta) / dt

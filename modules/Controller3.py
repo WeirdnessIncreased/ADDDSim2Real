@@ -15,7 +15,7 @@ import sys
 import os
 
 try:
-    import cubic_spline_planner
+    from modules import cubic_spline_planner
 except:
     raise
 
