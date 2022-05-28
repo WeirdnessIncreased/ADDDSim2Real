@@ -1,5 +1,6 @@
 import math
 from collections import deque
+from platform import java_ver
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -143,9 +144,9 @@ def generate_ray_casting_grid_map(ox, oy, xy_resolution, breshen=True):
                 occupancy_map[laser_beam[0]][
                     laser_beam[1]] = 0.0  # free area 0.0
             occupancy_map[ix][iy] = 1.0  # occupied area 1.0
-            occupancy_map[ix + 1][iy] = 1.0  # extend the occupied area
-            occupancy_map[ix][iy + 1] = 1.0  # extend the occupied area
-            occupancy_map[ix + 1][iy + 1] = 1.0  # extend the occupied area
+            #occupancy_map[ix + 1][iy] = 1.0  # extend the occupied area
+            #occupancy_map[ix][iy + 1] = 1.0  # extend the occupied area
+            #occupancy_map[ix + 1][iy + 1] = 1.0  # extend the occupied area
     # occupancy grid computed with with flood fill
     else:
         occupancy_map = init_flood_fill((center_x, center_y), (ox, oy), (x_w, y_w), (min_x, min_y), xy_resolution)
@@ -155,22 +156,13 @@ def generate_ray_casting_grid_map(ox, oy, xy_resolution, breshen=True):
             ix = int(round((x - min_x) / xy_resolution))
             iy = int(round((y - min_y) / xy_resolution))
             occupancy_map[ix][iy] = 1.0  # occupied area 1.0
-            occupancy_map[ix + 1][iy] = 1.0  # extend the occupied area
-            occupancy_map[ix][iy + 1] = 1.0  # extend the occupied area
-            occupancy_map[ix + 1][iy + 1] = 1.0  # extend the occupied area
-
+            #occupancy_map[ix + 1][iy] = 1.0  # extend the occupied area
+            #occupancy_map[ix][iy + 1] = 1.0  # extend the occupied area
+            #occupancy_map[ix + 1][iy + 1] = 1.0  # extend the occupied area
+    occupancy_map[center_x][center_y] = 2
     return occupancy_map, min_x, max_x, min_y, max_y, xy_resolution
 
-def main():
-
-    xy_resolution = 0.02  # x-y grid resolution
-    #ang, dist = file_read("lidar01.csv")
-    ox = np.sin(ang) * dist
-    oy = np.cos(ang) * dist
-    occupancy_map, min_x, max_x, min_y, max_y, xy_resolution = \
-        generate_ray_casting_grid_map(ox, oy, xy_resolution, True)
-    xy_res = np.array(occupancy_map).shape
-    """
+def show( ox, oy, occupancy_map, xy_res ):
     plt.figure(1, figsize=(10, 4))
     plt.subplot(122)
     plt.imshow(occupancy_map, cmap="PiYG_r")
@@ -188,8 +180,22 @@ def main():
     bottom, top = plt.ylim()  # return the current y-lim
     plt.ylim((top, bottom))  # rescale y axis, to match the grid orientation
     plt.grid(True)
-    plt.show()"""
+    plt.show()
 
 
-if __name__ == '__main__':
-    main()
+def lidar_to_gird_map( ang, dist ):
+
+    xy_resolution = 0.02  # x-y grid resolution
+    ox = np.sin(ang) * dist
+    oy = np.cos(ang) * dist
+    occupancy_map, min_x, max_x, min_y, max_y, xy_resolution = \
+        generate_ray_casting_grid_map(ox, oy, xy_resolution, True)
+    xy_res = np.array(occupancy_map).shape
+    print( xy_res )
+    '''
+    for i in range( 0, xy_res[0] ):
+        for j in range( 0, xy_res[1] ):
+            print( (int)(occupancy_map[i][j]), end = '' )
+        print()
+    '''
+    #show( ox, oy, occupancy_map, xy_res )

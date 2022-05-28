@@ -1,6 +1,8 @@
+from cmath import pi
 from Cogenvdecoder.CogEnvDecoder import CogEnvDecoder
 import numpy as np
 import cv2
+import lidar_to_grid_map
 
 def check_state(state, info=None):
     image_data = state["color_image"]
@@ -8,25 +10,33 @@ def check_state(state, info=None):
     vector_data = state["vector"]
     print("=======================state check====================")
     # laser scan distances from -135 deg to +135 deg, scan angle resolution is 270/(61-1) 
-    print("laser shape: {}, max distance: {}, min distance: {}".format(laser_data.shape, np.max(laser_data), np.min(laser_data)))
-    for i in laser_data:
-        print(i)
+    #print("laser shape: {}, max distance: {}, min distance: {}".format(laser_data.shape, np.max(laser_data), np.min(laser_data)))
+    ang = []
+    dist = []
+    #print( vector_data[0][2] )
+    for i in range( 0, 61 ):
+        #print( (float)( -vector_data[0][2] + ( 135 * ( i - 30 ) / 30 * pi / 180) )  )
+        ang.append((float)( -vector_data[0][2] + ( 135 * ( i - 30 ) / 30 * pi / 180) ))
+        dist.append( (float)(laser_data[i]) )
+    #print(vector_data[0])
     print("-----------------------end check---------------------")
+    return ang, dist
 
 
-env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=1) # mac os
+env = CogEnvDecoder(env_name="../../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=1) # mac os
 #env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=1)
-num_episodes = 10
-num_steps_per_episode = 5 # max: 1500
+num_episodes = 1
+num_steps_per_episode = 1 # max: 1500
 for i in range(num_episodes):
     #every time call the env.reset() will reset the envinronment
     observation = env.reset()
     
     for j in range(num_steps_per_episode):
         # action = env.action_space.sample()
-        action = [0.5, 0.5, 0.1, 0]  # [vx, vy, vw, fire]; vx: the velocity at which the vehicle moves forward, vy: the velocity at which the vehicle moves to the left, vw: Angular speed of the vehicle counterclockwise rotation, fire: Shoot or not
+        action = [0, 0, 0, 0]  # [vx, vy, vw, fire]; vx: the velocity at which the vehicle moves forward, vy: the velocity at which the vehicle moves to the left, vw: Angular speed of the vehicle counterclockwise rotation, fire: Shoot or not
         obs, reward, done, info = env.step(action)
         #cv2.imshow("color_image", obs["color_image"])
         #cv2.waitKey(1)
-        check_state(obs, info)
-        print(reward, done)
+        ang, dist = check_state(obs, info)
+        lidar_to_grid_map.lidar_to_gird_map( ang, dist )
+        #print(reward, done)
