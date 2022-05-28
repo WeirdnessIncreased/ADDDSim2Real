@@ -29,7 +29,7 @@ for i in range(num_episodes):
 
     for j in range(num_steps_per_episode):
 
-        print(f"=== Current state: x={obs['vector'][0][0]} y={obs['vector'][0][1]} theta={obs['vector'][0][2]}")
+        # print(f"=== Current state: x={obs['vector'][0][0]} y={obs['vector'][0][1]} theta={obs['vector'][0][2]}")
 
         activation_tar = robot.check_activation(obs)
         action = [0, 0, 0, 0]

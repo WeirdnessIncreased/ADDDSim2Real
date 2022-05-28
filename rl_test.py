@@ -26,7 +26,7 @@ while True:
     obs, reward, done, info = env.step(action)
     # env.render()
     if done:
-      obs = env.reset()
+        obs = env.reset()
 
 # # env = CogEnvDecoder(env_name="mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=1) 
 # print(">>>", env._env.reward_range, "<<<")

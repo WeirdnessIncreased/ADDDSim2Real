@@ -12,18 +12,18 @@ class RobotEnv(gym.Env):
                                      time_scale=self.time_scale, 
                                      worker_id=self.worker_id)
 
-        state_high = np.ones(61+28)
+        state_high = np.ones(61 + 28)
         state_high[:61] *= 100
         state_high[61:] *= 10
-        state_low = np.zeros(61+28)
+        state_low = np.zeros(61 + 28)
         state_high[-1] = 181
         self.observation_space = gym.spaces.Box(state_high, state_low, dtype=np.float32)
 
         # Action may need remapping
-        self.action_bound = np.array([2,2,np.pi/4, 1])
+        self.action_bound = np.array([2, 2, np.pi / 4, 1])
         self.action_space = gym.spaces.Box(np.ones(4), -np.ones(4), dtype=np.float32)
         
-    def step(self,action):
+    def step(self, action):
         action *= self.action_bound # Rescale it
         if action[-1] > 0:
             action[-1] = 1
@@ -33,7 +33,7 @@ class RobotEnv(gym.Env):
         _obs, reward, done, _info = self.cog_env.step(action)
         reward = self.calc_rewards_from_state(_obs['vector'])
 
-        obs = np.zeros(61+28)
+        obs = np.zeros(61 + 28)
         vec_state = _obs['vector']
         vec_state[2] = [vec_state[2]]
         obs[:61] = _obs['laser']
@@ -44,7 +44,7 @@ class RobotEnv(gym.Env):
         return obs, reward, done, info
 
     def calc_rewards_from_state(self, obs):
-        adv_r = (800-obs[4][0])+obs[1][0]
+        adv_r = (800 - obs[4][0]) + obs[1][0]
         # Time reward is tricker since if set to aggressive
         # It will encourage robot to suicide
         col_r = -10 * obs[-1][1]
@@ -52,14 +52,14 @@ class RobotEnv(gym.Env):
 
     def reset(self):
         _obs = self.cog_env.reset()
-        obs = np.zeros(61+28)
+        obs = np.zeros(61 + 28)
         vec_state = _obs['vector']
         vec_state[2] = [vec_state[2]]
         obs[:61] = _obs['laser']
         obs[61:] = np.array(list(itertools.chain.from_iterable(vec_state)))
         return obs
 
-    def render(self,mode="human"):
+    def render(self, mode="human"):
         self.cog_env.render(mode)
 
     def close(self):
