@@ -105,10 +105,6 @@ if __name__ == '__main__':
             path_x, path_y = PathPlanner.get_path(x1, y1, x2, y2, mx, my, ox, oy)
             pathlets[(x1, y1, x2, y2)] = (path_x, path_y)
             cnt += 1
-            if cnt == 3:
-                break
-        if cnt == 3:
-            break
 
     with open("pathlets", "wb") as fs:
         pickle.dump(pathlets, fs)
