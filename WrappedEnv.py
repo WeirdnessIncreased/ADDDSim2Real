@@ -31,6 +31,7 @@ class RobotEnv(gym.Env):
             action[-1] = 1
         
         _obs, reward, done, _info = self.cog_env.step(action)
+        print("===", type(_obs), _obs)
         reward = self.calc_rewards_from_state(_obs['vector'])
 
         obs = np.zeros(61 + 28)
