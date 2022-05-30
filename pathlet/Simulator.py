@@ -83,30 +83,40 @@ if __name__ == '__main__':
     ox, oy, obstacles = get_obstacle()
     xx, yy = get_critical()
 
-    # print(xx)
-    # plt.plot(ox, oy, ".k")
-    # plt.plot(xx, yy, "og")
-    # plt.grid(True)
-    # plt.axis("equal")
-    # plt.show()
 
     cnt = 1
     total = (len(xx) * len(yy) - len(xx)) / 2
 
-    pathlets = {}
+    pathlets = pickle.load(open("pathlets", "rb"))
 
     for idx1, pos1 in enumerate(list(zip(xx, yy))):
         x1, y1 = pos1[0], pos1[1]
         for idx2, pos2 in enumerate(list(zip(xx, yy))):
-            if idx2 <= idx1: continue
-            print(f"Processing {cnt}/{total}", end="\r")
-            sys.stdout.flush()
             x2, y2 = pos2[0], pos2[1]
-            path_x, path_y = PathPlanner.get_path(x1, y1, x2, y2, mx, my, ox, oy)
-            pathlets[(x1, y1, x2, y2)] = (path_x, path_y)
-            cnt += 1
+            if ((x1, y1, x2, y2) in pathlets and len(pathlets[(x1, y1, x2, y2)]) > 1) or ((x2, y2, x1, y1) in pathlets and len(pathlets[(x2, y2, x1, y1)]) > 1):
+                continue
+            plt.plot([x1, x2], [y1, y2])
 
-    with open("pathlets", "wb") as fs:
-        pickle.dump(pathlets, fs)
+    plt.plot(ox, oy, ".k")
+    plt.plot(xx, yy, "og")
+    plt.grid(True)
+    plt.axis("equal")
+    plt.show()
 
-    print("Finished (=ﾟωﾟ)ﾉ        ")
+    # pathlets = {}
+
+    # for idx1, pos1 in enumerate(list(zip(xx, yy))):
+    #     x1, y1 = pos1[0], pos1[1]
+    #     for idx2, pos2 in enumerate(list(zip(xx, yy))):
+    #         if idx2 <= idx1: continue
+    #         print(f"Processing {cnt}/{total}", end="\r")
+    #         sys.stdout.flush()
+    #         x2, y2 = pos2[0], pos2[1]
+    #         path_x, path_y = PathPlanner.get_path(x1, y1, x2, y2, mx, my, ox, oy)
+    #         pathlets[(x1, y1, x2, y2)] = (path_x, path_y)
+    #         cnt += 1
+
+    # with open("pathlets", "wb") as fs:
+    #     pickle.dump(pathlets, fs)
+
+    # print("Finished (=ﾟωﾟ)ﾉ        ")
