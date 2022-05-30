@@ -8,7 +8,7 @@ class RobotEnv(gym.Env):
         self.time_scale = time_scale
         self.worker_id = worker_id
         self.cog_env = CogEnvDecoder(env_name=env_name, 
-                                     no_graphics=False, 
+                                     no_graphics=True, 
                                      time_scale=self.time_scale, 
                                      worker_id=self.worker_id)
 
@@ -31,7 +31,6 @@ class RobotEnv(gym.Env):
             action[-1] = 1
         
         _obs, reward, done, _info = self.cog_env.step(action)
-        print("===", type(_obs), _obs)
         reward = self.calc_rewards_from_state(_obs['vector'])
 
         obs = np.zeros(61 + 28)

@@ -10,7 +10,7 @@ from stable_baselines3 import SAC
 
 # env = gym.make("Pendulum-v1")
 
-env = CogEnvDecoder(env_name="../mac_confrontation_v2/cog_confrontation_env.app", no_graphics=False, time_scale=1, worker_id=1) 
+env = CogEnvDecoder(env_name="../../mac_confrontation_v2/cog_confrontation_env.app", no_graphics=False, time_scale=1, worker_id=1) 
 # rl_env = RobotEnv("../mac_confrontation_v2/cog_confrontation_env.app")
 
 # model = SAC("MlpPolicy", rl_env, verbose=1)
