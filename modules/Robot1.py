@@ -28,7 +28,6 @@ for name in fixed_obstacle:
 dt = 0.01 # [s]
 L = 2 # [m] ? 
 prec = 0.10
-look_ahead = 2
 
 class Robot:
     def __init__(self, obs):
@@ -79,7 +78,7 @@ class Robot:
         path_y = path_y[::-1]
         self.path = list(zip(path_x, path_y))
 
-        # print(f"=== Updated path for goal [{tar + 1}]")
+        print(f"=== Updated path for goal [{tar + 1}]")
 
     def get_activation_action(self):
         sx, sy = self.x, self.y
@@ -88,12 +87,6 @@ class Robot:
         while math.hypot(tar[0] - sx, tar[1] - sy) <= prec:
             self.path = self.path[1:]
             tar = self.path[0]
-        if len(self.path) >= look_ahead:
-            tar = self.path[look_ahead - 1]
-        else:
-            tar = self.path[-1]
-
-        # print(f"tar={tar}, sx={sx}, sy={sy}")
 
         vx = (tar[0] - sx) / dt
         vy = (tar[1] - sy) / dt
@@ -107,23 +100,9 @@ class Robot:
         gx, gy = vector_data[5 + tar][0], vector_data[5 + tar][1]        
 
         tar_theta = np.arctan((gy - sy) / (gx - sx))
-        if stheta < 0: stheta = 2 * math.pi + stheta
-
-        if gx > sx and gy > sy:
-            w = - (tar_theta - stheta) / dt
-            # print("1")
-        elif gx < sx and gy > sy:
-            w = (math.pi + tar_theta - stheta) / dt
-            tar_theta = math.pi + tar_theta
-            # print("2")
-        elif gx < sx and gy < sy:
-            w = (math.pi + tar_theta - stheta) / dt
-            # print("3")
-        elif gx > sx and gy < sy:
-            w = (2 * math.pi + tar_theta - stheta) / dt
-            # print("4")
-
-        w = 0
+        if np.tan(tar_theta) * (gy - sy) < 0:
+            tar_theta += math.pi
+        w = (tar_theta - stheta) / dt
 
         return w
 
