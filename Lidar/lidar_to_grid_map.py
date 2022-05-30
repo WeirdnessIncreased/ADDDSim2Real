@@ -197,10 +197,12 @@ def lidar_to_gird_map( ang, dist ):
         generate_ray_casting_grid_map(ox, oy, xy_resolution, True)
     xy_res = np.array(occupancy_map).shape
     print( xy_res )
-    
+    ''' 
     for i in range( 0, xy_res[0] ):
         for j in range( 0, xy_res[1] ):
             print( occupancy_map[i][j], end = '' )
         print()
-    
+    '''
     #show( ox, oy, occupancy_map, xy_res )
+    return occupancy_map
+

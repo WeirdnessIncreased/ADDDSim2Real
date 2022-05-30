@@ -3,6 +3,7 @@ from Cogenvdecoder.CogEnvDecoder import CogEnvDecoder
 import numpy as np
 import cv2
 import lidar_to_grid_map
+import Convolution_matching
 
 def check_state(state, info=None):
     image_data = state["color_image"]
@@ -38,5 +39,8 @@ for i in range(num_episodes):
         #cv2.imshow("color_image", obs["color_image"])
         #cv2.waitKey(1)
         ang, dist = check_state(obs, info)
-        lidar_to_grid_map.lidar_to_gird_map( ang, dist )
+        occupancy_map = lidar_to_grid_map.lidar_to_gird_map( ang, dist )
+        obstacle_map = Convolution_matching.get_obstacle()
+        result = Convolution_matching.numpy_conv( obstacle_map, occupancy_map )
+        print( result )
         #print(reward, done)
