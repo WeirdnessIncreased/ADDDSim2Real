@@ -89,6 +89,8 @@ if __name__ == '__main__':
 
     pathlets = pickle.load(open("pathlets", "rb"))
 
+    pickle.dump(list(zip(xx, yy)), open("critical_points", "wb"))
+
     for idx1, pos1 in enumerate(list(zip(xx, yy))):
         x1, y1 = pos1[0], pos1[1]
         for idx2, pos2 in enumerate(list(zip(xx, yy))):

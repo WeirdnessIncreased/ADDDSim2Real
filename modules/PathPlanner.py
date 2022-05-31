@@ -261,7 +261,7 @@ def get_path(sx, sy, gx, gy, mx, my, obstacle):
         plt.grid(True)
         plt.axis("equal")
 
-    grid_size = 0.05
+    grid_size = 0.20
     robot_radius = 0.15
     goal_prec = 0.50 / grid_size
     a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
