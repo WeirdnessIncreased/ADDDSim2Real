@@ -22,31 +22,37 @@ def get_obstacle():
         oy2.append( fixed_obstacle[name][3] / 0.02 )
 
     obstacles = list(zip(ox1, oy1, ox2, oy2))
-
-    obstacle_map = int(np.zeros(( 8.08 / 0.02 , 4.48 / 0.02 )))
+    # 8.08 / 0.02 = 404
+    # 4.48 / 0.02 = 224
+    obstacle_map = np.zeros( ( 405, 225 ) , dtype=int)
 
     for pos in obstacles:
         for x in np.arange(pos[0], pos[2]):
             for y in np.arange(pos[1], pos[3]):    
-                obstacle_map[x][y] = 1
-
+                obstacle_map[ (int)(x), (int)(y) ] = 1
     return obstacle_map
 
 
 def numpy_conv(inputs, filter, padding="VALID"):
     H, W = inputs.shape
-    filter_size = filter.shape[0]
+    filter_size_x, filter_size_y = filter.shape
+    print( "size", H, W, filter_size_x, filter_size_y)
     # default np.floor
     # filter_center = int(filter_size / 2.0)
     # filter_center_ceil = int(np.ceil(filter_size / 2.0))
-
-    result = np.zeros((H - filter_size + 1, W - filter_size + 1))
+    result = np.zeros((H - filter_size_x + 1, W - filter_size_y + 1))
     H, W = inputs.shape
+    Max_num = 0.0
+    tx, ty = 0, 0
     # print("new size",H,W)
-    for r in range(0, H - filter_size + 1):
-        for c in range(0, W - filter_size + 1):
-            cur_input = inputs[r : r + filter_size, c : c + filter_size]
+    for r in range(0, H - filter_size_x + 1):
+        for c in range(0, W - filter_size_y + 1):
+            cur_input = inputs[r : r + filter_size_x, c : c + filter_size_y ]
             cur_output = cur_input * filter
             conv_sum = np.sum(cur_output)
+            if( conv_sum > Max_num ):
+                Max_num = conv_sum
+                tx = r
+                ty = c
             result[r, c] = conv_sum
-    return result
+    return result, tx, ty

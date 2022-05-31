@@ -11,7 +11,8 @@ def check_state(state, info=None):
     vector_data = state["vector"]
     print("=======================state check====================")
     # laser scan distances from -135 deg to +135 deg, scan angle resolution is 270/(61-1) 
-    #print("laser shape: {}, max distance: {}, min distance: {}".format(laser_data.shape, np.max(laser_data), np.min(laser_data)))
+    print("laser shape: {}, max distance: {}, min distance: {}".format(laser_data.shape, np.max(laser_data), np.min(laser_data)))
+    #print("self pose: {}, self info: {}, enemy active: {}, enemy pose: {}, enemy_info: {}".format(vector_data[0], vector_data[1], vector_data[2], vector_data[3], vector_data[4]))
     ang = []
     dist = []
     #print( vector_data[0][2] )
@@ -41,6 +42,7 @@ for i in range(num_episodes):
         ang, dist = check_state(obs, info)
         occupancy_map = lidar_to_grid_map.lidar_to_gird_map( ang, dist )
         obstacle_map = Convolution_matching.get_obstacle()
-        result = Convolution_matching.numpy_conv( obstacle_map, occupancy_map )
-        print( result )
-        #print(reward, done)
+        result, tx, ty = Convolution_matching.numpy_conv( obstacle_map, occupancy_map )
+        # print( np.max(result), np.min(result))
+        print( tx, ty )
+        # print(reward, done)

@@ -55,7 +55,7 @@ def calc_grid_map_config( ox, oy, xy_resolution ):
     max_y = round(max(oy) + EXTEND_AREA / 2.0)
     xw = int(round((max_x - min_x) / xy_resolution))
     yw = int(round((max_y - min_y) / xy_resolution))
-    print("The grid map is ", xw, "x", yw, ".")
+    print("Max_x, Min_x", max_x, min_x)
     return min_x, min_y, max_x, max_y, xw, yw
 
 def atan_zero_to_twopi(y, x):
@@ -160,11 +160,11 @@ def generate_ray_casting_grid_map(ox, oy, xy_resolution, breshen=True):
             occupancy_map[ix][iy + 1] = 1.0  # extend the occupied area
             occupancy_map[ix + 1][iy + 1] = 1.0  # extend the occupied area
     occupancy_map[center_x][center_y] = 2
-    print(center_x, center_y)
     x_size = min( occupancy_map.shape[0] - center_x, center_x )
     y_size = min( occupancy_map.shape[1] - center_y, center_y )
     x_size = y_size = min( x_size, y_size )
-    occupancy_map = occupancy_map[ center_x - x_size : center_x + x_size, center_y - y_size : center_y + y_size ]
+    print( "10086", center_x, center_y )
+    # occupancy_map = occupancy_map[ center_x - x_size : center_x + x_size, center_y - y_size : center_y + y_size ]
     return occupancy_map, min_x, max_x, min_y, max_y, xy_resolution
 
 def show( ox, oy, occupancy_map, xy_res ):
@@ -172,19 +172,19 @@ def show( ox, oy, occupancy_map, xy_res ):
     plt.subplot(122)
     plt.imshow(occupancy_map, cmap="PiYG_r")
     # cmap = "binary" "PiYG_r" "PiYG_r" "bone" "bone_r" "RdYlGn_r"
-    plt.clim(-0.4, 1.4)
-    plt.gca().set_xticks(np.arange(-.5, xy_res[1], 1), minor=True)
-    plt.gca().set_yticks(np.arange(-.5, xy_res[0], 1), minor=True)
-    plt.grid(True, which="minor", color="w", linewidth=0.6, alpha=0.5)
-    plt.colorbar()
-    plt.subplot(121)
-    plt.plot([oy, np.zeros(np.size(oy))], [ox, np.zeros(np.size(oy))], "ro-")
-    plt.axis("equal")
-    plt.plot(0.0, 0.0, "ob")
-    plt.gca().set_aspect("equal", "box")
-    bottom, top = plt.ylim()  # return the current y-lim
-    plt.ylim((top, bottom))  # rescale y axis, to match the grid orientation
-    plt.grid(True)
+    # plt.clim(-0.4, 1.4)
+    # plt.gca().set_xticks(np.arange(-.5, xy_res[1], 1), minor=True)
+    # plt.gca().set_yticks(np.arange(-.5, xy_res[0], 1), minor=True)
+    # plt.grid(True, which="minor", color="w", linewidth=0.6, alpha=0.5)
+    # plt.colorbar()
+    # plt.subplot(121)
+    # plt.plot([oy, np.zeros(np.size(oy))], [ox, np.zeros(np.size(oy))], "ro-")
+    # plt.axis("equal")
+    # plt.plot(0.0, 0.0, "ob")
+    # plt.gca().set_aspect("equal", "box")
+    # bottom, top = plt.ylim()  # return the current y-lim
+    # plt.ylim((top, bottom))  # rescale y axis, to match the grid orientation
+    # plt.grid(True)
     plt.show()
 
 
@@ -203,6 +203,6 @@ def lidar_to_gird_map( ang, dist ):
             print( occupancy_map[i][j], end = '' )
         print()
     '''
-    #show( ox, oy, occupancy_map, xy_res )
+    show( ox, oy, occupancy_map, xy_res )
     return occupancy_map
 
