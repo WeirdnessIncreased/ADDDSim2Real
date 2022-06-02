@@ -30,7 +30,7 @@ for i in range(num_episodes):
                 robot.update_activation_path(obs, activation_tar)
                 last_activation_tar = activation_tar
             if math.hypot(obs["vector"][0][0] - obs["vector"][5 + activation_tar][0], obs["vector"][0][1] - obs["vector"][5 + activation_tar][1]) > goal_prec:
-                action = robot.get_activation_action()
+                action = robot.get_activation_action(obs['vector'][0][0], obs['vector'][0][1])
             elif True:
                 rotation = robot.get_activation_rotation(obs, activation_tar)
                 action[2] = rotation
@@ -43,15 +43,20 @@ for i in range(num_episodes):
         action[0] = math.cos(-theta) * vx - math.sin(-theta) * vy
         action[1] = math.sin(-theta) * vx + math.cos(-theta) * vy
 
-        action[0] /= 0.04 
-        action[1] /= 0.04
-        last_x, last_y = obs["vector"][0][0], obs["vector"][0][1]
-        # print(f"Next action: {action}")
+        la_x, la_y = obs["vector"][0][0], obs["vector"][0][1]
+
+        print(f"Next action: {action}")
         obs, reward, done, info = env.step(action)
-        if robot.tar_v_x != 0 and obs["vector"][0][0] != last_x:
-            t1 = (obs["vector"][0][0] - last_x) / robot.tar_v_x
-        if robot.tar_v_y != 0 and obs["vector"][0][1] != last_y:
-            t2 = (obs["vector"][0][1] - last_y) / robot.tar_v_y
+
+        # if robot.tar_v_x != 0 and obs["vector"][0][0] != last_x:
+        #     t1 = (obs["vector"][0][0] - last_x) / robot.tar_v_x
+        # if robot.tar_v_y != 0 and obs["vector"][0][1] != last_y:
+        #     t2 = (obs["vector"][0][1] - last_y) / robot.tar_v_y
+
+        
+        cu_x, cu_y = obs["vector"][0][0], obs["vector"][0][1]
+        t1 = (cu_x - la_x) / vx
+        t2 = (cu_y - la_y) / vy
         print(f"t1: {t1}     t2: {t2}")
 
         # obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + prex

@@ -1,4 +1,5 @@
 """
+        print("=======", self.state.v)
 
 Path tracking simulation with Stanley steering control and PID speed control.
 
@@ -26,7 +27,7 @@ dt = 0.1  # [s] time difference
 L = 0.19  # [m] Wheel base of vehicle
 max_steer = np.radians(30)  # [rad] max steering angle
 
-show_animation = True
+show_animation = False
 
 
 class State(object):
@@ -47,7 +48,7 @@ class State(object):
         self.yaw = yaw
         self.v = v
 
-    def update(self, acceleration, delta):
+    def update(self, acceleration, delta, x, y):
         """
         Update the state of the vehicle.
 
@@ -58,8 +59,12 @@ class State(object):
         """
         delta = np.clip(delta, -max_steer, max_steer)
 
-        self.x += self.v * np.cos(self.yaw) * dt
-        self.y += self.v * np.sin(self.yaw) * dt
+        self.x = x
+        self.y = y
+        # self.x += self.v * np.cos(self.yaw)
+        # self.y += self.v * np.sin(self.yaw)
+        # self.x += self.v * np.cos(self.yaw) * dt
+        # self.y += self.v * np.sin(self.yaw) * dt
         self.yaw += self.v / L * np.tan(delta) * dt
         self.yaw = normalize_angle(self.yaw)
         self.v += acceleration * dt

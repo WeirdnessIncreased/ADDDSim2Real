@@ -26,9 +26,9 @@ dt = 0.1  # [s] time difference
 L = 0.19  # [m] Wheel base of vehicle
 max_steer = np.radians(30)  # [rad] max steering angle
 
-show_animation = True 
+show_animation = False
 
-show_speed = False 
+show_speed = True
 show_pos = True 
 print_path = False
 
@@ -116,27 +116,38 @@ class Robot:
         # path_y = [path_y[-1]] + path_y[-3::-6]
         # self.path = MotionController.CubicSplinePath(path_x, path_y)
         self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.1)
-        self.state = Controller3.State(x=sx, y=sy, yaw=np.radians(20.0), v=0.0)
+        # self.state = Controller3.State(x=sx, y=sy, yaw=np.radians(20.0), v=0.0)
+        self.state = Controller3.State(x=sx, y=sy, yaw=math.pi/6/3*2,v=0.0)#(obs['vector'][0][2]+math.pi)%math.pi, v=0.0)
         self.target_idx, _ = Controller3.calc_target_index(self.state, self.cx, self.cy)
         if show_animation:
             self.simulation(obs, self.cx, self.cy, self.cyaw, ck)
 
-
         print(f"=== Updated path for goal [{tar + 1}]")
 
-    def get_activation_action(self):
+    def get_activation_action(self, sx, sy):
         ai = Controller3.pid_control(target_speed, self.state.v)
         di, self.target_idx = Controller3.stanley_control(self.state, self.cx, self.cy, self.cyaw, self.target_idx)
+
         last_x, last_y = self.state.x, self.state.y
-        self.state.update(ai, di)
+
+        self.state.update(ai, di, sx, sy)
+        print("=======", self.state.v, self.state.yaw)
+
+        self.tar_v_x = self.state.v * np.cos(self.state.yaw)
+        self.tar_v_y = self.state.v * np.sin(self.state.yaw)
+
+
+        # self.state.x = sx
+        # self.state.y = sy
 
         # di = np.clip(di, -max_steer, max_steer)
 
         # self.state.yaw += self.state.v / L * np.tan(di) * dt
         # self.state.yaw = Controller3.normalize_angle(self.state.yaw)
         # self.state.v += ai * dt
-        self.tar_v_x = (self.state.x - last_x) 
-        self.tar_v_y = (self.state.y - last_y)
+        # self.tar_v_x = (self.state.x - last_x) 
+        # self.tar_v_y = (self.state.y - last_y)
+
         if show_speed:
             print(f"vx: {self.tar_v_x}     vy: {self.tar_v_y}")
         if show_pos:
