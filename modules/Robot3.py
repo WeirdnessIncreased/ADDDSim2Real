@@ -28,6 +28,10 @@ max_steer = np.radians(30)  # [rad] max steering angle
 
 show_animation = True 
 
+show_speed = False 
+show_pos = True 
+print_path = False
+
 target_speed = 30.0 / 3.6  #[m/s]
 
 ox1, oy1, ox2, oy2 = [], [], [], []
@@ -45,10 +49,12 @@ class Robot:
         self.cy = None
         self.cyaw = None
         self.target_idx = None
+        self.state = None
+        self.tar_v_x = None
+        self.tar_v_y = None
 
         vector_data = obs["vector"]
         sx, sy = vector_data[0][0], vector_data[0][1]
-        self.state = Controller3.State(x=sx, y=sy, yaw=np.radians(20.0), v=0.0)
 
         dynamic_obstacles = [vector_data[5][:2], vector_data[6][:2], vector_data[7][:2], vector_data[8][:2], vector_data[9][:2]]
         
@@ -63,7 +69,7 @@ class Robot:
     def update_state(self, obs):
         # note that velocity and yaw are updated in get_action()
         vector_data = obs["vector"]
-        self.x, self.y = vector_data[0][0], vector_data[0][1]
+        self.state.x, self.state.y = vector_data[0][0], vector_data[0][1]
         self.ang = vector_data[0][2]
 
     def check_activation(self, obs):
@@ -87,48 +93,56 @@ class Robot:
         print(f"gx: {gx}")
         print(f"gy: {gy}")
 
-        gy -= 0.5
+        gy -= 0.1
         mx, my = map_size[0], map_size[1]
         obstacles = list(zip(ox1, oy1, ox2, oy2))
 
         path_x, path_y = PathPlanner.get_path(sx, sy, gx, gy, mx, my, obstacles)
         # for i in range(len(path_x)):
             # path_x[i] = path_x[i] * 10
-        print(path_x)
-        print(path_y)
+        if print_path:
+            print(path_x)
+            print(path_y)
         lx = len(path_x)
         path_x = [path_x[-1]] + path_x[min(-lx//6, -1)::min(-lx//10, -1)]
         # for i in range(len(path_y)):
             # path_y[i] = path_y[i] * 10
         ly = len(path_y)
         path_y = [path_y[-1]] + path_y[min(-ly//6, -1)::min(-ly//10, -1)]
-        print(path_x)
-        print(path_y)
+        if print_path:
+            print(path_x)
+            print(path_y)
         # path_x = [path_x[-1]] + path_x[-3::-6]
         # path_y = [path_y[-1]] + path_y[-3::-6]
         # self.path = MotionController.CubicSplinePath(path_x, path_y)
         self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.1)
+        self.state = Controller3.State(x=sx, y=sy, yaw=np.radians(20.0), v=0.0)
         self.target_idx, _ = Controller3.calc_target_index(self.state, self.cx, self.cy)
-        self.simulation(obs, self.cx, self.cy, self.cyaw, ck)
+        if show_animation:
+            self.simulation(obs, self.cx, self.cy, self.cyaw, ck)
 
-        # Controller2.visualize(path_x, path_y, sx, sy)
-        # MotionController.visualize(path_x, path_y, sx, sy)
 
         print(f"=== Updated path for goal [{tar + 1}]")
 
     def get_activation_action(self):
         ai = Controller3.pid_control(target_speed, self.state.v)
         di, self.target_idx = Controller3.stanley_control(self.state, self.cx, self.cy, self.cyaw, self.target_idx)
+        last_x, last_y = self.state.x, self.state.y
+        self.state.update(ai, di)
 
-        di = np.clip(di, -max_steer, max_steer)
+        # di = np.clip(di, -max_steer, max_steer)
 
-        self.state.yaw += self.state.v / L * np.tan(di) * dt
-        self.state.yaw = Controller3.normalize_angle(self.state.yaw)
-        self.state.v += ai * dt
-        tar_v_x = self.state.v * np.cos(self.state.yaw)
-        tar_v_y = self.state.v * np.sin(self.state.yaw)
+        # self.state.yaw += self.state.v / L * np.tan(di) * dt
+        # self.state.yaw = Controller3.normalize_angle(self.state.yaw)
+        # self.state.v += ai * dt
+        self.tar_v_x = (self.state.x - last_x) 
+        self.tar_v_y = (self.state.y - last_y)
+        if show_speed:
+            print(f"vx: {self.tar_v_x}     vy: {self.tar_v_y}")
+        if show_pos:
+            print(f"x: {self.state.x}      y: {self.state.y}")
 
-        return [tar_v_x, tar_v_y, 0, 0]
+        return [self.tar_v_x, self.tar_v_y, 0, 0]
 
     def get_activation_rotation(self, obs, tar):
         vector_data = obs["vector"]
