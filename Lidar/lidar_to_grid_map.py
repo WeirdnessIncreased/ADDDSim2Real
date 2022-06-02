@@ -55,7 +55,7 @@ def calc_grid_map_config( ox, oy, xy_resolution ):
     max_y = round(max(oy) + EXTEND_AREA / 2.0)
     xw = int(round((max_x - min_x) / xy_resolution))
     yw = int(round((max_y - min_y) / xy_resolution))
-    print("Max_x, Min_x", max_x, min_x)
+    # print("Max_x, Min_x", max_x, min_x)
     return min_x, min_y, max_x, max_y, xw, yw
 
 def atan_zero_to_twopi(y, x):
@@ -164,6 +164,8 @@ def generate_ray_casting_grid_map(ox, oy, xy_resolution, breshen=True):
     y_size = min( occupancy_map.shape[1] - center_y, center_y )
     x_size = y_size = min( x_size, y_size )
     print( "10086", center_x, center_y )
+    occupancy_map = occupancy_map[::-1,:]
+    occupancy_map = occupancy_map.transpose( 1, 0 )
     # occupancy_map = occupancy_map[ center_x - x_size : center_x + x_size, center_y - y_size : center_y + y_size ]
     return occupancy_map, min_x, max_x, min_y, max_y, xy_resolution
 
@@ -196,13 +198,15 @@ def lidar_to_gird_map( ang, dist ):
     occupancy_map, min_x, max_x, min_y, max_y, xy_resolution = \
         generate_ray_casting_grid_map(ox, oy, xy_resolution, True)
     xy_res = np.array(occupancy_map).shape
-    print( xy_res )
+    print( xy_res[0] )
     ''' 
     for i in range( 0, xy_res[0] ):
         for j in range( 0, xy_res[1] ):
             print( occupancy_map[i][j], end = '' )
         print()
     '''
+    # occupancy_map = occupancy_map.transpose( 1, 0 )
     show( ox, oy, occupancy_map, xy_res )
+    
     return occupancy_map
 
