@@ -137,21 +137,9 @@ class Robot:
         gx, gy = vector_data[5 + tar][0], vector_data[5 + tar][1]        
 
         tar_theta = np.arctan((gy - sy) / (gx - sx))
-        if stheta < 0: stheta = 2 * math.pi + stheta
-
-        if gx > sx and gy > sy:
-            w = (tar_theta - stheta) / dt
-            print("1")
-        elif gx < sx and gy > sy:
-            w = (math.pi + tar_theta - stheta) / dt
-            tar_theta = math.pi + tar_theta
-            print("2")
-        elif gx < sx and gy < sy:
-            w = (math.pi + tar_theta - stheta) / dt
-            print("3")
-        elif gx > sx and gy < sy:
-            w = (2 * math.pi + tar_theta - stheta) / dt
-            print("4")
+        if np.tan(tar_theta) * (gy - sy) < 0:
+            tar_theta += math.pi
+        w = (tar_theta - stheta) / dt
 
         return w
         
