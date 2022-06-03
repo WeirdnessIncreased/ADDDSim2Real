@@ -13,7 +13,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
-show_animation = True 
+show_animation = False
 
 
 class AStarPlanner:
@@ -31,7 +31,7 @@ class AStarPlanner:
         self.resolution = resolution
         self.rr = rr
         self.min_x, self.min_y = 0, 0
-        self.max_x, self.max_y = 0, 0
+        self.max_x, self.max_y = 4.48, 8.08
         self.obstacle_map = None
         self.x_width, self.y_width = 0, 0
         self.motion = self.get_motion_model()
@@ -64,8 +64,8 @@ class AStarPlanner:
             ry: y position list of the final path
         """
 
-        start_node = self.Node(self.calc_xy_index(sx, self.min_x),
-                               self.calc_xy_index(sy, self.min_y), 0.0, -1)
+        start_node = self.Node(self.calc_xy_index(sx, self.min_x, self.max_x, True),
+                               self.calc_xy_index(sy, self.min_y, self.max_y, True), 0.0, -1)
         goal_node = self.Node(self.calc_xy_index(gx, self.min_x),
                               self.calc_xy_index(gy, self.min_y), 0.0, -1)
 
@@ -142,6 +142,7 @@ class AStarPlanner:
             rx.append(self.calc_grid_position(n.x, self.min_x))
             ry.append(self.calc_grid_position(n.y, self.min_y))
             parent_index = n.parent_index
+            la_x, la_y = n.x, n.y
 
         return rx, ry
 
@@ -162,8 +163,17 @@ class AStarPlanner:
         pos = index * self.resolution + min_position
         return pos
 
-    def calc_xy_index(self, position, min_pos):
-        return round((position - min_pos) / self.resolution)
+    def calc_xy_index(self, position, min_pos, max_pos=0, is_start=False):
+        ret = round((position - min_pos) / self.resolution)
+        if is_start:
+            minn = round(min_pos / self.resolution)
+            maxx = round(max_pos / self.resolution)
+            print("[[[[[[[[]]]]]]]]   ", ret, minn, maxx)
+            if ret <= minn:
+                ret = minn + 1
+            elif ret >= maxx:
+                ret = maxx - 1
+        return ret
 
     def calc_grid_index(self, node):
         return (node.y - self.min_y) * self.x_width + (node.x - self.min_x)
@@ -261,8 +271,10 @@ def get_path(sx, sy, gx, gy, mx, my, obstacle):
         plt.grid(True)
         plt.axis("equal")
 
+    # print("==========", sx, sy, gx, gy)
+
     grid_size = 0.20
-    robot_radius = 0.15
+    robot_radius = 0.10
     goal_prec = 0.50 / grid_size
     a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
     rx, ry = a_star.planning(sx, sy, gx, gy, goal_prec)

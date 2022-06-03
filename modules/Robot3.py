@@ -22,7 +22,7 @@ map_size = [8.08, 4.48]
 
 k = 5  # control gain
 Kp = 0.05  # speed proportional gain
-dt = 0.1  # [s] time difference
+dt = 0.04  # [s] time difference
 L = 0.19  # [m] Wheel base of vehicle
 max_steer = np.radians(30)  # [rad] max steering angle
 
@@ -32,7 +32,7 @@ show_speed = True
 show_pos = True 
 print_path = False
 
-target_speed = 30.0 / 3.6  #[m/s]
+target_speed = 20  #[m/s]
 
 ox1, oy1, ox2, oy2 = [], [], [], []
 
@@ -67,7 +67,6 @@ class Robot:
             oy2.append(y + 0.15)
 
     def update_state(self, obs):
-        # note that velocity and yaw are updated in get_action()
         vector_data = obs["vector"]
         self.state.x, self.state.y = vector_data[0][0], vector_data[0][1]
         self.ang = vector_data[0][2]
@@ -93,9 +92,9 @@ class Robot:
         print(f"gx: {gx}")
         print(f"gy: {gy}")
 
-        gy -= 0.3
-        if math.floor(gy) <= 1:
-            gy = vector_data[5 + tar][1] + 0.3
+        # gy -= 0.3
+        # if math.floor(gy) <= 1:
+        #     gy = vector_data[5 + tar][1] + 0.3
         mx, my = map_size[0], map_size[1]
         obstacles = list(zip(ox1, oy1, ox2, oy2))
 
@@ -106,11 +105,11 @@ class Robot:
             print(path_x)
             print(path_y)
         lx = len(path_x)
-        path_x = [path_x[-1]] + path_x[min(-lx//6, -1)::min(-lx//10, -1)]
+        path_x = [path_x[-1]] + path_x[min(-lx//5, -1)::min(-lx//7, -1)]
         # for i in range(len(path_y)):
             # path_y[i] = path_y[i] * 10
         ly = len(path_y)
-        path_y = [path_y[-1]] + path_y[min(-ly//6, -1)::min(-ly//10, -1)]
+        path_y = [path_y[-1]] + path_y[min(-ly//5, -1)::min(-ly//7, -1)]
         if print_path:
             print(path_x)
             print(path_y)
@@ -119,7 +118,7 @@ class Robot:
         # self.path = MotionController.CubicSplinePath(path_x, path_y)
         self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.1)
         # self.state = Controller3.State(x=sx, y=sy, yaw=np.radians(20.0), v=0.0)
-        self.state = Controller3.State(x=sx, y=sy, yaw=math.pi/6/3*2,v=0.0)#(obs['vector'][0][2]+math.pi)%math.pi, v=0.0)
+        self.state = Controller3.State(x=sx, y=sy, yaw=obs['vector'][0][2], v=0.0)
         self.target_idx, _ = Controller3.calc_target_index(self.state, self.cx, self.cy)
         if show_animation:
             self.simulation(obs, self.cx, self.cy, self.cyaw, ck)
@@ -133,22 +132,9 @@ class Robot:
         last_x, last_y = self.state.x, self.state.y
 
         self.state.update(ai, di, sx, sy)
-        print("=======", self.state.v, self.state.yaw)
 
         self.tar_v_x = self.state.v * np.cos(self.state.yaw)
         self.tar_v_y = self.state.v * np.sin(self.state.yaw)
-
-
-        # self.state.x = sx
-        # self.state.y = sy
-
-        # di = np.clip(di, -max_steer, max_steer)
-
-        # self.state.yaw += self.state.v / L * np.tan(di) * dt
-        # self.state.yaw = Controller3.normalize_angle(self.state.yaw)
-        # self.state.v += ai * dt
-        # self.tar_v_x = (self.state.x - last_x) 
-        # self.tar_v_y = (self.state.y - last_y)
 
         if show_speed:
             print(f"vx: {self.tar_v_x}     vy: {self.tar_v_y}")
