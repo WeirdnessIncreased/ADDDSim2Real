@@ -9,7 +9,7 @@ class RobotEnv(gym.Env):
         self.time_scale = time_scale
         self.worker_id = worker_id
         self.cog_env = CogEnvDecoder(env_name=env_name, 
-                                     no_graphics=False, 
+                                     no_graphics=True, 
                                      time_scale=self.time_scale, 
                                      worker_id=self.worker_id)
 
@@ -47,18 +47,18 @@ class RobotEnv(gym.Env):
     def calc_rewards_from_state(self, obs, action):
         adv_r = (800 - obs[4][0]) + obs[1][0] # enemy HP, self HP
         adv_r *= 0.1
-        distance_control = -1000000 * (np.sqrt(math.hypot(obs[0][0] - obs[3][0], obs[0][1] - obs[3][1])) - 2) ** 2
+        distance_control = -1000 * (np.sqrt(math.hypot(obs[0][0] - obs[3][0], obs[0][1] - obs[3][1])) - 2) ** 2
         # angle_control = -1000000 * abs(action[2])
         sx, sy, gx, gy = obs[0][0], obs[0][1], obs[3][0], obs[3][1]
         s_g_theta = np.arctan((gy - sy) / (gx - sx))
         if np.tan((gy - sy) / (gx - sx)) * (gy - sy) < 0:
             s_g_theta = s_g_theta + math.pi
         s_theta = obs[0][2]
-        angle_control = -10000 * abs(s_theta - s_g_theta)
+        angle_control = -1000 * abs(s_theta - s_g_theta)
         # Time reward is tricker since if set to aggressive
         # It will encourage robot to suicide
         col_r = -100 * obs[-1][1] # collision time
-        return adv_r + col_r + distance_control 
+        return adv_r + col_r + distance_control + angle_control
 
     def reset(self):
         _obs = self.cog_env.reset()
