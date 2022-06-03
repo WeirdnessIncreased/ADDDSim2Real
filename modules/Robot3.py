@@ -32,7 +32,7 @@ show_speed = True
 show_pos = True 
 print_path = False
 
-target_speed = 20  #[m/s]
+target_speed = 10  #[m/s]
 
 ox1, oy1, ox2, oy2 = [], [], [], []
 
@@ -42,6 +42,7 @@ for name in fixed_obstacle:
     ox2.append(fixed_obstacle[name][2])
     oy2.append(fixed_obstacle[name][3])
 
+oox1, ooy1, oox2, ooy2 = ox1[:], oy1[:], ox2[:], oy2[:]
 
 class Robot:
     def __init__(self, obs):
@@ -58,6 +59,8 @@ class Robot:
 
         dynamic_obstacles = [vector_data[5][:2], vector_data[6][:2], vector_data[7][:2], vector_data[8][:2], vector_data[9][:2]]
         
+        ox1, oy1, ox2, oy2 = oox1[:], ooy1[:], oox2[:], ooy2[:]
+
         for ob in dynamic_obstacles:
             x = ob[0]
             y = ob[1]
@@ -105,11 +108,11 @@ class Robot:
             print(path_x)
             print(path_y)
         lx = len(path_x)
-        path_x = [path_x[-1]] + path_x[min(-lx//5, -1)::min(-lx//7, -1)]
+        path_x = [path_x[-1]] + path_x[min(-lx//6, -1)::min(-lx//10, -1)]
         # for i in range(len(path_y)):
             # path_y[i] = path_y[i] * 10
         ly = len(path_y)
-        path_y = [path_y[-1]] + path_y[min(-ly//5, -1)::min(-ly//7, -1)]
+        path_y = [path_y[-1]] + path_y[min(-ly//6, -1)::min(-ly//10, -1)]
         if print_path:
             print(path_x)
             print(path_y)
