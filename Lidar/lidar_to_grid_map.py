@@ -159,14 +159,14 @@ def generate_ray_casting_grid_map(ox, oy, xy_resolution, breshen=True):
             occupancy_map[ix + 1][iy] = 1.0  # extend the occupied area
             occupancy_map[ix][iy + 1] = 1.0  # extend the occupied area
             occupancy_map[ix + 1][iy + 1] = 1.0  # extend the occupied area
-    occupancy_map[center_x][center_y] = 2
-    x_size = min( occupancy_map.shape[0] - center_x, center_x )
-    y_size = min( occupancy_map.shape[1] - center_y, center_y )
+    # occupancy_map[center_x][center_y] = 2
+    x_size = min( occupancy_map.shape[1] - center_x, center_x )
+    y_size = min( occupancy_map.shape[0] - center_y, center_y )
     x_size = y_size = min( x_size, y_size )
-    print( "10086", center_x, center_y )
+    # print( "10086", center_x, center_y )
     occupancy_map = occupancy_map[::-1,:]
     occupancy_map = occupancy_map.transpose( 1, 0 )
-    # occupancy_map = occupancy_map[ center_x - x_size : center_x + x_size, center_y - y_size : center_y + y_size ]
+    occupancy_map = occupancy_map[ center_x - x_size : center_x + x_size, center_y - y_size : center_y + y_size ]
     return occupancy_map, min_x, max_x, min_y, max_y, xy_resolution
 
 def show( ox, oy, occupancy_map, xy_res ):
@@ -198,11 +198,11 @@ def lidar_to_gird_map( ang, dist ):
     occupancy_map, min_x, max_x, min_y, max_y, xy_resolution = \
         generate_ray_casting_grid_map(ox, oy, xy_resolution, True)
     xy_res = np.array(occupancy_map).shape
-    print( xy_res[0] )
-    ''' 
+    print( xy_res )
+    '''
     for i in range( 0, xy_res[0] ):
-        for j in range( 0, xy_res[1] ):
-            print( occupancy_map[i][j], end = '' )
+        for j in range( xy_res[1] -1 , -1, -1 ):
+            print( int(occupancy_map[i][j]), end = '' )
         print()
     '''
     # occupancy_map = occupancy_map.transpose( 1, 0 )

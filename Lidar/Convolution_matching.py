@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def get_obstacle():
     fixed_obstacle = {
@@ -30,6 +31,10 @@ def get_obstacle():
         for x in np.arange(pos[0], pos[2]):
             for y in np.arange(pos[1], pos[3]):    
                 obstacle_map[ (int)(x), (int)(y) ] = 1
+
+    # plt.figure(1, figsize=(10, 4))
+    # plt.subplot(122)
+    plt.imshow(obstacle_map)
     return obstacle_map
 
 
@@ -54,5 +59,6 @@ def numpy_conv(inputs, filter, padding="VALID"):
                 Max_num = conv_sum
                 tx = r
                 ty = c
+                print( "1", tx, ty, Max_num )
             result[r, c] = conv_sum
-    return result, tx, ty
+    return result, tx + 75, ty + 75
