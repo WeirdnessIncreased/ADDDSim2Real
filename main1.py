@@ -20,8 +20,8 @@ for i in range(num_episodes):
     bias_x = np.random.uniform(-0.5,0.5,1)[0]
     bias_y = np.random.uniform(-0.5,0.5,1)[0]
 
-    obs['vector'][0][0] += np.random.uniform(-0.1,0.1,1)[0] + bias_x
-    obs['vector'][0][1] += np.random.uniform(-0.1,0.1,1)[0] + bias_y
+    # obs['vector'][0][0] += np.random.uniform(-0.1,0.1,1)[0] + bias_x
+    # obs['vector'][0][1] += np.random.uniform(-0.1,0.1,1)[0] + bias_y
  
     robot = Robot(obs)
 
@@ -55,8 +55,8 @@ for i in range(num_episodes):
         action[1] *= 10
         obs, reward, done, info = env.step(action)
 
-        obs['vector'][0][0] += np.random.uniform(-0.1,0.1,1)[0] + bias_x
-        obs['vector'][0][1] += np.random.uniform(-0.1,0.1,1)[0] + bias_y
+        # obs['vector'][0][0] += np.random.uniform(-0.1,0.1,1)[0] + bias_x
+        # obs['vector'][0][1] += np.random.uniform(-0.1,0.1,1)[0] + bias_y
 
         robot.update_state(obs)
 

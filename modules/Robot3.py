@@ -93,7 +93,9 @@ class Robot:
         print(f"gx: {gx}")
         print(f"gy: {gy}")
 
-        gy -= 0.1
+        gy -= 0.3
+        if math.floor(gy) <= 1:
+            gy = vector_data[5 + tar][1] + 0.3
         mx, my = map_size[0], map_size[1]
         obstacles = list(zip(ox1, oy1, ox2, oy2))
 
