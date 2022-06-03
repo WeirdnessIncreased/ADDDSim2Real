@@ -62,7 +62,7 @@ for i in range(num_episodes):
         # obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + prex
         # obs["vector"][0][1] += np.random.uniform(-0.1, 0.1, 1)[0] + prey
 
-        robot.update_state(obs)
+        # robot.update_state(obs)
 
         # cv2.imshow("color_image", obs["color_image"])
         # cv2.waitKey(1)

@@ -1,0 +1,41 @@
+E0602 23:28:49.194731000 8673185280 fork_posix.cc:76]                  Other threads are currently calling into gRPC, skipping fork() handlers
+[INFO] Connected to Unity environment with package version 2.1.0-exp.1 and communication version 1.5.0
+[INFO] Connected new brain: Navigation?team=0
+/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/gym/logger.py:34: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
+  warnings.warn(colorize("%s: %s" % ("WARN", msg % args), "yellow"))
+Using cpu device
+Wrapping the env with a `Monitor` wrapper
+Wrapping the env in a DummyVecEnv.
+Traceback (most recent call last):
+  File "rl_train.py", line 18, in <module>
+    model.learn(total_timesteps=100000, log_interval=4, eval_log_path="./log")
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/stable_baselines3/sac/sac.py", line 292, in learn
+    return super(SAC, self).learn(
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 347, in learn
+    rollout = self.collect_rollouts(
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 577, in collect_rollouts
+    actions, buffer_actions = self._sample_action(learning_starts, action_noise, env.num_envs)
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 408, in _sample_action
+    unscaled_action, _ = self.predict(self._last_obs, deterministic=False)
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/stable_baselines3/common/base_class.py", line 562, in predict
+    return self.policy.predict(observation, state, episode_start, deterministic)
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/stable_baselines3/common/policies.py", line 338, in predict
+    actions = self._predict(observation, deterministic=deterministic)
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/stable_baselines3/sac/policies.py", line 359, in _predict
+    return self.actor(observation, deterministic)
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/stable_baselines3/sac/policies.py", line 177, in forward
+    return self.action_dist.actions_from_params(mean_actions, log_std, deterministic=deterministic, **kwargs)
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/stable_baselines3/common/distributions.py", line 178, in actions_from_params
+    self.proba_distribution(mean_actions, log_std)
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/stable_baselines3/common/distributions.py", line 210, in proba_distribution
+    super(SquashedDiagGaussianDistribution, self).proba_distribution(mean_actions, log_std)
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/stable_baselines3/common/distributions.py", line 152, in proba_distribution
+    self.distribution = Normal(mean_actions, action_std)
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/torch/distributions/normal.py", line 50, in __init__
+    super(Normal, self).__init__(batch_shape, validate_args=validate_args)
+  File "/Users/helloelwin/opt/anaconda3/envs/sim2real/lib/python3.8/site-packages/torch/distributions/distribution.py", line 55, in __init__
+    raise ValueError(
+ValueError: Expected parameter loc (Tensor of shape (1, 4)) of distribution Normal(loc: torch.Size([1, 4]), scale: torch.Size([1, 4])) to satisfy the constraint Real(), but found invalid values:
+tensor([[nan, nan, nan, nan]])
