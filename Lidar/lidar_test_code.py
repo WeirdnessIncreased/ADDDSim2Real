@@ -23,7 +23,7 @@ def check_state(state, info=None):
         dist.append( (float)(laser_data[i]) )
     #print(vector_data[0])
     print("-----------------------end check---------------------")
-    return ang, dist
+    return ang, dist, vector_data[0]
 
 
 env = CogEnvDecoder(env_name="../../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=1) # mac os
@@ -40,9 +40,9 @@ for i in range(num_episodes):
         obs, reward, done, info = env.step(action)
         #cv2.imshow("color_image", obs["color_image"])
         #cv2.waitKey(1)
-        ang, dist = check_state(obs, info)
+        ang, dist, vector_data = check_state(obs, info)
         occupancy_map = lidar_data_mapping.lidar_to_gird_map( ang, dist )
-        obstacle_map = Convolution_matching.get_obstacle()
+        obstacle_map = Convolution_matching.get_obstacle(vector_data)
         result, tx, ty = Convolution_matching.numpy_conv( obstacle_map, occupancy_map )
         # print( np.max(result), np.min(result))
         print( tx, ty )

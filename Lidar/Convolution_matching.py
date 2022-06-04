@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def get_obstacle():
+def get_obstacle( vector_data ):
     fixed_obstacle = {
         'B1': [ 7.08, 1.00, 8.08, 1.2],
         'B2': [ 5.78, 2.14 ,6.58 , 2.34], 
@@ -34,7 +34,30 @@ def get_obstacle():
 
     # plt.figure(1, figsize=(10, 4))
     # plt.subplot(122)
-    plt.imshow(obstacle_map)
+    # plt.imshow(obstacle_map)
+    x = int(vector_data[0][0] / 0.02)
+    y = int(vector_data[0][1] / 0.02)
+    if( x - 100 >= 0 ):
+        size_x_down = x - 100
+    else:
+        size_x_down = 0
+
+    if( x + 100 < 404 ):
+        size_x_up = x + 100
+    else:
+        size_x_up = 404
+
+    if( y - 100 >= 0 ):
+        size_y_left = y - 100
+    else:
+        size_y_left = 0
+
+    if( y + 100 < 224 ):
+        size_y_right = y + 100
+    else:
+        size_y_right = 224
+
+    obstacle_map = obstacle_map[ size_x_down: size_x_up, size_y_left: size_y_right ]
     return obstacle_map
 
 
