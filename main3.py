@@ -21,7 +21,6 @@ bias_x = 0
 bias_y = 0
 
 map_size = [8.08, 4.48]
-show_pos = False 
 for i in range(num_episodes):
 
     obs = env.reset()
@@ -46,13 +45,11 @@ for i in range(num_episodes):
                 robot.update_activation_path(obs, activation_tar)
                 last_activation_tar = activation_tar
             else:
-                if show_pos:
-                    print(f"x: {x}   y: {y}")
-            if math.hypot(obs["vector"][0][0] - obs["vector"][5 + activation_tar][0], obs["vector"][0][1] - obs["vector"][5 + activation_tar][1]) > goal_prec:
-                action = robot.get_activation_action(obs['vector'][0][0], obs['vector'][0][1])
-            else:
-                rotation = robot.get_activation_rotation(obs, activation_tar)
-                action[2] = rotation
+                if math.hypot(obs["vector"][0][0] - obs["vector"][5 + activation_tar][0], obs["vector"][0][1] - obs["vector"][5 + activation_tar][1]) > goal_prec:
+                    action = robot.get_activation_action(obs['vector'][0][0], obs['vector'][0][1])
+                else:
+                    rotation = robot.get_activation_rotation(obs, activation_tar)
+                    action[2] = rotation
         else:
             break
 
