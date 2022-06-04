@@ -23,7 +23,7 @@ except:
 
 k = 5  # control gain
 Kp = 0.05  # speed proportional gain
-dt = 0.1  # [s] time difference
+dt = 0.04  # [s] time difference
 L = 0.19  # [m] Wheel base of vehicle
 max_steer = np.radians(30)  # [rad] max steering angle
 

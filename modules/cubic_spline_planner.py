@@ -22,6 +22,7 @@ class Spline:
 
         self.nx = len(x)  # dimension of x
         h = np.diff(x)
+        h[np.argwhere(h == 0).flatten()] = 1e-8
 
         # calc coefficient c
         self.a = [iy for iy in y]
@@ -136,6 +137,7 @@ class Spline2D:
         self.s = self.__calc_s(x, y)
         self.sx = Spline(self.s, x)
         self.sy = Spline(self.s, y)
+
 
     def __calc_s(self, x, y):
         dx = np.diff(x)

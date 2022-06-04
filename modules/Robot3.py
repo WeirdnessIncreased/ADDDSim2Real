@@ -29,10 +29,10 @@ max_steer = np.radians(30)  # [rad] max steering angle
 show_animation = False
 
 show_speed = True
-show_pos = True 
-print_path = False
+show_pos = False 
+print_path = True 
 
-target_speed = 10  #[m/s]
+target_speed = 20  #[m/s]
 
 ox1, oy1, ox2, oy2 = [], [], [], []
 
@@ -102,24 +102,35 @@ class Robot:
         obstacles = list(zip(ox1, oy1, ox2, oy2))
 
         path_x, path_y = PathPlanner.get_path(sx, sy, gx, gy, mx, my, obstacles)
-        # for i in range(len(path_x)):
-            # path_x[i] = path_x[i] * 10
+
         if print_path:
             print(path_x)
             print(path_y)
+
         lx = len(path_x)
-        path_x = [path_x[-1]] + path_x[min(-lx//6, -1)::min(-lx//10, -1)]
-        # for i in range(len(path_y)):
-            # path_y[i] = path_y[i] * 10
+        origin_begin_x = path_x[-1]
+        origin_end_x = path_x[0]
+        path_x = path_x[min(-lx//6, -1)::min(-lx//10, -1)]
+
         ly = len(path_y)
-        path_y = [path_y[-1]] + path_y[min(-ly//6, -1)::min(-ly//10, -1)]
+        origin_begin_y = path_x[-1]
+        origin_end_y = path_x[0]
+        path_y = path_y[min(-ly//6, -1)::min(-ly//10, -1)]
+
+        if origin_begin_x not in path_x:
+            path_x = [origin_begin_x] + path_x
+            path_y = [origin_begin_y] + path_y
+        if origin_end_x not in path_x:
+            path_x = path_x + [origin_end_x]
+            path_y = path_y + [origin_end_y]
+        
         if print_path:
             print(path_x)
             print(path_y)
-        # path_x = [path_x[-1]] + path_x[-3::-6]
-        # path_y = [path_y[-1]] + path_y[-3::-6]
+
         # self.path = MotionController.CubicSplinePath(path_x, path_y)
         self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.1)
+        print(f"beginning: cx: {self.cx}   cy: {self.cy}")
         # self.state = Controller3.State(x=sx, y=sy, yaw=np.radians(20.0), v=0.0)
         self.state = Controller3.State(x=sx, y=sy, yaw=obs['vector'][0][2], v=0.0)
         self.target_idx, _ = Controller3.calc_target_index(self.state, self.cx, self.cy)
