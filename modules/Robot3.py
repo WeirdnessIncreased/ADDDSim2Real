@@ -113,8 +113,8 @@ class Robot:
         path_x = path_x[min(-lx//6, -1)::min(-lx//10, -1)]
 
         ly = len(path_y)
-        origin_begin_y = path_x[-1]
-        origin_end_y = path_x[0]
+        origin_begin_y = path_y[-1]
+        origin_end_y = path_y[0]
         path_y = path_y[min(-ly//6, -1)::min(-ly//10, -1)]
 
         if origin_begin_x not in path_x:
@@ -130,7 +130,6 @@ class Robot:
 
         # self.path = MotionController.CubicSplinePath(path_x, path_y)
         self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.1)
-        print(f"beginning: cx: {self.cx}   cy: {self.cy}")
         # self.state = Controller3.State(x=sx, y=sy, yaw=np.radians(20.0), v=0.0)
         self.state = Controller3.State(x=sx, y=sy, yaw=obs['vector'][0][2], v=0.0)
         self.target_idx, _ = Controller3.calc_target_index(self.state, self.cx, self.cy)

@@ -53,8 +53,6 @@ def observation(xTrue, xd, u):
     ud = u + INPUT_NOISE @ np.random.randn(2, 1)
 
     xd = motion_model(xd, ud)
-    print(f"z: {z}")
-    print(f"ud: {ud}")
 
     return xTrue, z, xd, ud
 
@@ -131,8 +129,6 @@ def ekf_estimation(xEst, PEst, z, u):
     #  Update
     jH = jacob_h()
     zPred = observation_model(xPred)
-    print(f"xPred: {xPred}")
-    print(f"zPred: {zPred}")
     y = z - zPred
     S = jH @ PPred @ jH.T + R
     K = PPred @ jH.T @ np.linalg.inv(S)
@@ -182,7 +178,6 @@ def noise_reduce(x, y, yaw, v, x_e, y_e):
     hz = np.zeros((2, 1))
 
     u = calc_input(v, 0)
-    print("aaaaaaaa")
 
     xTrue, z, xDR, ud = observation(xTrue, xDR, u)
     xEst, PEst = ekf_estimation(xEst, PEst, z, ud)
