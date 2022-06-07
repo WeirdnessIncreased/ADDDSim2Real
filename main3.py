@@ -6,7 +6,7 @@ from modules import PathPlanner as PathPlanner
 from Cogenvdecoder.CogEnvDecoder import CogEnvDecoder
 from modules import extended_kalman_filter as ex
 
-num_episodes = 10
+num_episodes = 20
 num_steps_per_episode = int(5e8)
 env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=1) 
 
@@ -27,12 +27,14 @@ for i in range(num_episodes):
     obs = env.reset()
     robot = Robot(obs)
 
-    # obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_x
-    # obs["vector"][0][1] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_y
+    ##### noise #####
+    obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_x
+    obs["vector"][0][1] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_y
+    ##### noise #####
 
-    # x, y = obs["vector"][0][0], obs["vector"][0][1]
-    # obs["vector"][0][0] = min(max(x, 0), map_size[0])
-    # obs["vector"][0][1] = min(max(y, 0), map_size[1])
+    x, y = obs["vector"][0][0], obs["vector"][0][1]
+    obs["vector"][0][0] = min(max(x, 0), map_size[0])
+    obs["vector"][0][1] = min(max(y, 0), map_size[1])
 
     last_activation_tar = -1
     t1, t2 = 0.04, 0.04
@@ -48,6 +50,7 @@ for i in range(num_episodes):
             action = robot.get_activation_action(cu_x, cu_y)
             action[2] = robot.get_activation_rotation(obs, activation_tar)
         else:
+            # action = robot.get_fight_action(obs)
             action = [0, 0, 0, 0]
             break
 
@@ -76,20 +79,21 @@ for i in range(num_episodes):
         # t2 = (cu_y - la_y) / vy
         # print(f"t1: {t1}     t2: {t2}")
 
-        # obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_x
-        # obs["vector"][0][1] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_y
-        # x, y = obs["vector"][0][0], obs["vector"][0][1]
+        ##### noise #####
+        obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_x
+        obs["vector"][0][1] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_y
+        ##### noise #####
 
-        # ideal_x = robot.cx[robot.target_idx]
-        # ideal_y = robot.cy[robot.target_idx]
-        # vt = robot.state.v
-        # yaw = robot.state.yaw
-        # xxx = obs["vector"][0][0]
-        # yyy = obs["vector"][0][1]
-        # xEst = ex.noise_reduce(xxx, yyy, yaw, vt, ideal_x, ideal_y)
-        # obs["vector"][0][0] = xEst[0, 0]
-        # obs["vector"][0][1] = xEst[1, 0]
+        ideal_x = robot.cx[robot.target_idx]
+        ideal_y = robot.cy[robot.target_idx]
+        vt = robot.state.v
+        yaw = robot.state.yaw
+        xxx = obs["vector"][0][0]
+        yyy = obs["vector"][0][1]
+        xEst = ex.noise_reduce(xxx, yyy, yaw, vt, ideal_x, ideal_y)
+        obs["vector"][0][0] = xEst[0, 0]
+        obs["vector"][0][1] = xEst[1, 0]
 
-        # x, y = obs["vector"][0][0], obs["vector"][0][1]
-        # obs["vector"][0][0] = min(max(x, 0), map_size[0])
-        # obs["vector"][0][1] = min(max(y, 0), map_size[1])
+        x, y = obs["vector"][0][0], obs["vector"][0][1]
+        obs["vector"][0][0] = min(max(x, 0), map_size[0])
+        obs["vector"][0][1] = min(max(y, 0), map_size[1])

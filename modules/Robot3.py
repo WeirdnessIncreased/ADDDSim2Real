@@ -51,7 +51,7 @@ dt = 0.04  # [s] time difference
 L = 0.18  # [m] Wheel base of vehicle
 max_steer = math.pi / 6  # [rad] max steering angle
 
-show_animation = True
+show_animation = False
 
 show_speed = False
 show_pos = False
@@ -205,7 +205,39 @@ class Robot:
             w = + (tar_theta - stheta) / dt
 
         return w
-        
+
+    def get_fight_action(self, obs):
+        vec = obs['vector']
+
+        cu_x, cu_y, cu_w = vec[0]
+        en_x, en_y, en_w = vec[3]
+
+        cu_h, cu_b = obs['vector'][1]
+        en_h, en_b = obs['vector'][4]
+
+        if en_b == 0:
+            action = [0, 0, 100, 0]
+        else:
+            action = [0, 0, 0, 0]
+
+            # rotation
+            tar = np.arctan2(en_y - cu_y, en_x - cu_x)
+            if abs(tar - cu_w) > math.pi:
+                action[2] = - (tar - cu_W) / dt
+            else:
+                action[2] = + (tar - cu_w) / dt
+
+            # shoot or not
+            ob = list(zip(self.ox, self.oy))
+            # close_ob = filter(lmbda x: math.hypot(x[0] - wsm))
+
+            # random walk
+            action[0] = np.random.rand() * 192608 % 17
+            action[1] = np.random.rand() * 192608 % 17
+
+
+        return action
+
     def simulation(self, obs, cx, cy, cyaw, ck, yaw):
         vector_data = obs["vector"]
         sx, sy = vector_data[0][0], vector_data[0][1]
