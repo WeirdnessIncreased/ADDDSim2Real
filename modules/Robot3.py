@@ -10,7 +10,7 @@ from modules import cubic_spline_planner
 
 ox, oy = [], [] # store solid fixed obstacles and map borders
 map_size = [8.08, 4.48] # [m]
-obstacle_prec = 0.10 # [m]
+obstacle_prec = 0.15 # [m]
 
 fixed_obstacle = {
     'B1': [ 7.08, 1.00, 8.08, 1.2],
@@ -48,14 +48,15 @@ for y in np.arange(0, map_size[1], obstacle_prec):
 k = 5  # control gain
 Kp = 0.05  # speed proportional gain
 dt = 0.04  # [s] time difference
-L = 0.19  # [m] Wheel base of vehicle
-max_steer = np.radians(30)  # [rad] max steering angle
+L = 0.18  # [m] Wheel base of vehicle
+max_steer = math.pi / 4  # [rad] max steering angle
 
 show_animation = False
 
-show_speed = True
-show_pos = False 
-print_path = True 
+show_speed = False
+show_pos = False
+show_spline = False
+print_path = False
 
 target_speed = 20  #[m/s]
 
@@ -147,12 +148,24 @@ class Robot:
             print(path_y)
 
         # self.path = MotionController.CubicSplinePath(path_x, path_y)
-        self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.1)
-        # self.state = Controller3.State(x=sx, y=sy, yaw=np.radians(20.0), v=0.0)
-        self.state = Controller3.State(x=sx, y=sy, yaw=obs['vector'][0][2], v=0.0)
+        self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.25)
+
+        if show_spline:
+            plt.plot(path_x, path_y, "xb", label="input")
+            plt.plot(self.cx, self.cy, "-r", label="spline")
+            plt.grid(True)
+            plt.axis("equal")
+            plt.xlabel("x[m]")
+            plt.ylabel("y[m]")
+            plt.legend()
+            plt.show()
+
+        fake_yaw = np.arctan2(path_y[1] - path_y[0], path_x[1] - path_x[0])
+        self.state = Controller3.State(x=sx, y=sy, yaw=fake_yaw, v=0.0)
         self.target_idx, _ = Controller3.calc_target_index(self.state, self.cx, self.cy)
+
         if show_animation:
-            self.simulation(obs, self.cx, self.cy, self.cyaw, ck)
+            self.simulation(obs, self.cx, self.cy, self.cyaw, ck, fake_yaw)
 
         print(f"=== Updated path for goal [{tar + 1}]")
 
@@ -187,10 +200,10 @@ class Robot:
 
         return w
         
-    def simulation(self, obs, cx, cy, cyaw, ck):
+    def simulation(self, obs, cx, cy, cyaw, ck, yaw):
         vector_data = obs["vector"]
         sx, sy = vector_data[0][0], vector_data[0][1]
-        state = Controller3.State(x=sx, y=sy, yaw=np.radians(20.0), v=0.0)
+        state = Controller3.State(x=sx, y=sy, yaw=yaw, v=0.0)
         max_simulation_time = 100000.0
         last_idx = len(cx) - 1
 

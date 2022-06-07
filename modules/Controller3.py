@@ -12,6 +12,7 @@ Ref:
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 import sys
 import os
 
@@ -21,14 +22,13 @@ except:
     raise
 
 
-k = 5  # control gain
-Kp = 0.05  # speed proportional gain
+k = 10  # control gain
+Kp = 0.10  # speed proportional gain
 dt = 0.04  # [s] time difference
 L = 0.19  # [m] Wheel base of vehicle
-max_steer = np.radians(30)  # [rad] max steering angle
+max_steer = math.pi / 4  # [rad] max steering angle
 
-show_animation = False
-
+show_animation = True
 
 class State(object):
     """

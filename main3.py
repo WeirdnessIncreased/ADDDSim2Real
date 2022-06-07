@@ -27,26 +27,29 @@ for i in range(num_episodes):
     obs = env.reset()
     robot = Robot(obs)
 
-    obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_x
-    obs["vector"][0][1] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_y
+    # obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_x
+    # obs["vector"][0][1] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_y
 
-    x, y = obs["vector"][0][0], obs["vector"][0][1]
-    obs["vector"][0][0] = min(max(x, 0), map_size[0])
-    obs["vector"][0][1] = min(max(y, 0), map_size[1])
+    # x, y = obs["vector"][0][0], obs["vector"][0][1]
+    # obs["vector"][0][0] = min(max(x, 0), map_size[0])
+    # obs["vector"][0][1] = min(max(y, 0), map_size[1])
+
     last_activation_tar = -1
     t1, t2 = 0.04, 0.04
 
     for j in range(num_steps_per_episode):
         activation_tar = robot.check_activation(obs)
-        x, y = obs["vector"][0][0], obs["vector"][0][1]
+        cu_x, cu_y = obs["vector"][0][0], obs["vector"][0][1]
+        print(f'=== Current position: x={cu_x}, y={cu_y}')
         if activation_tar != -1:
             if activation_tar != last_activation_tar:
                 robot.update_activation_path(obs, activation_tar)
                 last_activation_tar = activation_tar
-            # if math.hypot(obs["vector"][0][0] - obs["vector"][5 + activation_tar][0], obs["vector"][0][1] - obs["vector"][5 + activation_tar][1]) > goal_prec:
-            action = robot.get_activation_action(obs['vector'][0][0], obs['vector'][0][1])
-            # else:
-            action[2] = robot.get_activation_rotation(obs, activation_tar)
+            if math.hypot(cu_x - obs["vector"][5 + activation_tar][0], cu_y - obs["vector"][5 + activation_tar][1]) > goal_prec:
+                action = robot.get_activation_action(cu_x, cu_y)
+            else:
+                action = [0, 0, 0, 0]
+                action[2] = robot.get_activation_rotation(obs, activation_tar)
         else:
             action = [0, 0, 0, 0]
             break
@@ -64,31 +67,32 @@ for i in range(num_episodes):
         print(f"Next action: {action}")
         obs, reward, done, info = env.step(action)
 
+
         # if robot.tar_v_x != 0 and obs["vector"][0][0] != last_x:
         #     t1 = (obs["vector"][0][0] - last_x) / robot.tar_v_x
         # if robot.tar_v_y != 0 and obs["vector"][0][1] != last_y:
         #     t2 = (obs["vector"][0][1] - last_y) / robot.tar_v_y
 
         
-        cu_x, cu_y = obs["vector"][0][0], obs["vector"][0][1]
-        t1 = (cu_x - la_x) / vx
-        t2 = (cu_y - la_y) / vy
-        print(f"t1: {t1}     t2: {t2}")
+        # cu_x, cu_y = obs["vector"][0][0], obs["vector"][0][1]
+        # t1 = (cu_x - la_x) / vx
+        # t2 = (cu_y - la_y) / vy
+        # print(f"t1: {t1}     t2: {t2}")
 
-        obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_x
-        obs["vector"][0][1] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_y
-        x, y = obs["vector"][0][0], obs["vector"][0][1]
+        # obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_x
+        # obs["vector"][0][1] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_y
+        # x, y = obs["vector"][0][0], obs["vector"][0][1]
 
-        ideal_x = robot.cx[robot.target_idx]
-        ideal_y = robot.cy[robot.target_idx]
-        vt = robot.state.v
-        yaw = robot.state.yaw
-        xxx = obs["vector"][0][0]
-        yyy = obs["vector"][0][1]
-        xEst = ex.noise_reduce(xxx, yyy, yaw, vt, ideal_x, ideal_y)
-        obs["vector"][0][0] = xEst[0, 0]
-        obs["vector"][0][1] = xEst[1, 0]
+        # ideal_x = robot.cx[robot.target_idx]
+        # ideal_y = robot.cy[robot.target_idx]
+        # vt = robot.state.v
+        # yaw = robot.state.yaw
+        # xxx = obs["vector"][0][0]
+        # yyy = obs["vector"][0][1]
+        # xEst = ex.noise_reduce(xxx, yyy, yaw, vt, ideal_x, ideal_y)
+        # obs["vector"][0][0] = xEst[0, 0]
+        # obs["vector"][0][1] = xEst[1, 0]
 
-        x, y = obs["vector"][0][0], obs["vector"][0][1]
-        obs["vector"][0][0] = min(max(x, 0), map_size[0])
-        obs["vector"][0][1] = min(max(y, 0), map_size[1])
+        # x, y = obs["vector"][0][0], obs["vector"][0][1]
+        # obs["vector"][0][0] = min(max(x, 0), map_size[0])
+        # obs["vector"][0][1] = min(max(y, 0), map_size[1])
