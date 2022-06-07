@@ -6,6 +6,12 @@ import sys
 import os
 from modules import cubic_spline_planner
 
+################# Obstacle & Map #################
+
+ox, oy = [], [] # store solid fixed obstacles and map borders
+map_size = [8.08, 4.48] # [m]
+obstacle_prec = 0.10 # [m]
+
 fixed_obstacle = {
     'B1': [ 7.08, 1.00, 8.08, 1.2],
     'B2': [ 5.78, 2.14 ,6.58 , 2.34], 
@@ -18,7 +24,26 @@ fixed_obstacle = {
     'B9': [ 0, 3.28, 1, 3.48]
 }
 
-map_size = [8.08, 4.48]
+for name in fixed_obstacle:
+    pos = fixed_obstacle[name]
+    for x in np.arange(pos[0], pos[2], obstacle_prec):
+        for y in np.arange(pos[1], pos[3], obstacle_prec):
+            ox.append(x)
+            oy.append(y)
+
+for x in np.arange(0, map_size[0], obstacle_prec):
+    ox.append(x)
+    oy.append(0)
+    ox.append(x)
+    oy.append(map_size[1])
+
+for y in np.arange(0, map_size[1], obstacle_prec):
+    ox.append(0)
+    oy.append(y)
+    ox.append(map_size[0])
+    oy.append(y)
+
+################# Hyperparameters #################
 
 k = 5  # control gain
 Kp = 0.05  # speed proportional gain
@@ -34,18 +59,12 @@ print_path = True
 
 target_speed = 20  #[m/s]
 
-ox1, oy1, ox2, oy2 = [], [], [], []
-
-for name in fixed_obstacle:
-    ox1.append(fixed_obstacle[name][0])
-    oy1.append(fixed_obstacle[name][1])
-    ox2.append(fixed_obstacle[name][2])
-    oy2.append(fixed_obstacle[name][3])
-
-oox1, ooy1, oox2, ooy2 = ox1[:], oy1[:], ox2[:], oy2[:]
+################# The robot agent #################
 
 class Robot:
     def __init__(self, obs):
+        self.ox = ox[:] # obstacle x for path planning
+        self.oy = oy[:] # obstacle y for path planning
         self.cx = None
         self.cy = None
         self.cyaw = None
@@ -56,18 +75,15 @@ class Robot:
 
         vector_data = obs["vector"]
         sx, sy = vector_data[0][0], vector_data[0][1]
-
         dynamic_obstacles = [vector_data[5][:2], vector_data[6][:2], vector_data[7][:2], vector_data[8][:2], vector_data[9][:2]]
-        
-        ox1, oy1, ox2, oy2 = oox1[:], ooy1[:], oox2[:], ooy2[:]
 
         for ob in dynamic_obstacles:
             x = ob[0]
             y = ob[1]
-            ox1.append(x - 0.15)
-            oy1.append(y - 0.15)
-            ox2.append(x + 0.15)
-            oy2.append(y + 0.15)
+            for x in np.arange(ob[0] - 0.15, ob[0] + 0.15, obstacle_prec):
+                for y in np.arange(ob[0] - 0.15, ob[1] + 0.15, obstacle_prec):
+                    self.ox.append(x)
+                    self.oy.append(y)
 
     def update_state(self, obs):
         vector_data = obs["vector"]
@@ -84,7 +100,6 @@ class Robot:
         print(f"=== Next goal: [{tar}]")
         return tar
 
-
     def update_activation_path(self, obs, tar):
         vector_data = obs["vector"]
 
@@ -99,9 +114,8 @@ class Robot:
         # if math.floor(gy) <= 1:
         #     gy = vector_data[5 + tar][1] + 0.3
         mx, my = map_size[0], map_size[1]
-        obstacles = list(zip(ox1, oy1, ox2, oy2))
 
-        path_x, path_y = PathPlanner.get_path(sx, sy, gx, gy, mx, my, obstacles)
+        path_x, path_y = PathPlanner.get_path(sx, sy, gx, gy, self.ox, self.oy)
 
         if print_path:
             print(path_x)
@@ -169,7 +183,6 @@ class Robot:
 
         return w
         
-
     def simulation(self, obs, cx, cy, cyaw, ck):
         vector_data = obs["vector"]
         sx, sy = vector_data[0][0], vector_data[0][1]

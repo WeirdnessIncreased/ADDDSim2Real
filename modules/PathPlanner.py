@@ -13,7 +13,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
-show_animation = False 
+show_animation = True
 
 
 class AStarPlanner:
@@ -240,30 +240,8 @@ class AStarPlanner:
 
         return motion
 
-def get_path(sx, sy, gx, gy, mx, my, obstacle):
-    prec = 0.05
+def get_path(sx, sy, gx, gy, ox, oy):
 
-    ox = []
-    oy = []
-
-    for pos in obstacle:
-        for x in np.arange(pos[0], pos[2], prec):
-            for y in np.arange(pos[1], pos[3], prec):
-                ox.append(x)
-                oy.append(y)
-
-    for x in np.arange(0, mx, prec):
-        ox.append(x)
-        oy.append(0)
-        ox.append(x)
-        oy.append(my)
-
-    for y in np.arange(0, my, prec):
-        ox.append(0)
-        oy.append(y)
-        ox.append(mx)
-        oy.append(y)
-                
     if show_animation:  # pragma: no cover
         plt.plot(ox, oy, ".k")
         plt.plot(sx, sy, "og")
@@ -271,15 +249,13 @@ def get_path(sx, sy, gx, gy, mx, my, obstacle):
         plt.grid(True)
         plt.axis("equal")
 
-    # print("==========", sx, sy, gx, gy)
-
     grid_size = 0.20
     robot_radius = 0.15
     goal_prec = 0.50 / grid_size
     a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
     rx, ry = a_star.planning(sx, sy, gx, gy, goal_prec)
 
-    if show_animation:  # pragma: no cover
+    if show_animation:
         plt.plot(rx, ry, "-r")
         plt.pause(0.001)
         plt.show()
