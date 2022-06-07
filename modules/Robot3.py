@@ -77,13 +77,17 @@ class Robot:
         sx, sy = vector_data[0][0], vector_data[0][1]
         dynamic_obstacles = [vector_data[5][:2], vector_data[6][:2], vector_data[7][:2], vector_data[8][:2], vector_data[9][:2]]
 
+        print(dynamic_obstacles)
+        print(self.ox, self.oy)
+
         for ob in dynamic_obstacles:
-            x = ob[0]
-            y = ob[1]
             for x in np.arange(ob[0] - 0.15, ob[0] + 0.15, obstacle_prec):
-                for y in np.arange(ob[0] - 0.15, ob[1] + 0.15, obstacle_prec):
+                for y in np.arange(ob[1] - 0.15, ob[1] + 0.15, obstacle_prec):
                     self.ox.append(x)
                     self.oy.append(y)
+                    print(x, y)
+
+        print(self.ox, self.oy)
 
     def update_state(self, obs):
         vector_data = obs["vector"]
