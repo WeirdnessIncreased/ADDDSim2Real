@@ -35,29 +35,30 @@ def get_obstacle( vector_data ):
     # plt.figure(1, figsize=(10, 4))
     # plt.subplot(122)
     # plt.imshow(obstacle_map)
-    x = int(vector_data[0][0] / 0.02)
-    y = int(vector_data[0][1] / 0.02)
+    x = int(vector_data[0] / 0.02)
+    y = int(vector_data[1] / 0.02)
     if( x - 100 >= 0 ):
-        size_x_down = x - 100
+        size_x_left = x - 100
     else:
-        size_x_down = 0
+        size_x_left = 0
 
     if( x + 100 < 404 ):
-        size_x_up = x + 100
+        size_x_right = x + 100
     else:
-        size_x_up = 404
+        size_x_right = 404
 
     if( y - 100 >= 0 ):
-        size_y_left = y - 100
+        size_y_down = y - 100
     else:
-        size_y_left = 0
+        size_y_down = 0
 
     if( y + 100 < 224 ):
-        size_y_right = y + 100
+        size_y_up = y + 100
     else:
-        size_y_right = 224
+        size_y_up = 224
 
-    obstacle_map = obstacle_map[ size_x_down: size_x_up, size_y_left: size_y_right ]
+    obstacle_map = obstacle_map[ size_x_left: size_x_right, size_y_down: size_y_up ]
+    print( size_x_left - size_x_right, size_y_down - size_y_up )
     return obstacle_map
 
 
