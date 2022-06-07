@@ -46,19 +46,19 @@ for y in np.arange(0, map_size[1], obstacle_prec):
 ################# Hyperparameters #################
 
 k = 5  # control gain
-Kp = 0.05  # speed proportional gain
+Kp = 0.03  # speed proportional gain
 dt = 0.04  # [s] time difference
 L = 0.18  # [m] Wheel base of vehicle
-max_steer = math.pi / 4  # [rad] max steering angle
+max_steer = math.pi / 6  # [rad] max steering angle
 
-show_animation = False
+show_animation = True
 
 show_speed = False
 show_pos = False
 show_spline = False
 print_path = False
 
-target_speed = 20  #[m/s]
+target_speed = 24  #[m/s]
 
 ################# The robot agent #################
 
@@ -118,9 +118,10 @@ class Robot:
         # gy -= 0.3
         # if math.floor(gy) <= 1:
         #     gy = vector_data[5 + tar][1] + 0.3
-        mx, my = map_size[0], map_size[1]
+        # mx, my = map_size[0], map_size[1]
 
         path_x, path_y = PathPlanner.get_path(sx, sy, gx, gy, self.ox, self.oy)
+        # path_x, path_y = path_x[-1::-2], path_y[-1::-2]
 
         if print_path:
             print(path_x)
@@ -148,7 +149,8 @@ class Robot:
             print(path_y)
 
         # self.path = MotionController.CubicSplinePath(path_x, path_y)
-        self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.25)
+
+        self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.1)
 
         if show_spline:
             plt.plot(path_x, path_y, "xb", label="input")
@@ -196,7 +198,11 @@ class Robot:
         tar_theta = np.arctan((gy - sy) / (gx - sx))
         if np.tan(tar_theta) * (gy - sy) < 0:
             tar_theta += math.pi
-        w = (tar_theta - stheta) / dt
+
+        if abs(tar_theta - stheta) > math.pi:
+            w = - (tar_theta - stheta) / dt
+        else:
+            w = + (tar_theta - stheta) / dt
 
         return w
         
@@ -245,19 +251,19 @@ class Robot:
                 plt.title("Speed[km/h]:" + str(state.v * 3.6)[:4])
                 plt.pause(0.001)
 
-        if show_animation:  # pragma: no cover
-            plt.plot(cx, cy, ".r", label="course")
-            plt.plot(x, y, "-b", label="trajectory")
-            plt.legend()
-            plt.xlabel("x[m]")
-            plt.ylabel("y[m]")
-            plt.axis("equal")
-            plt.grid(True)
+        # if show_animation:  # pragma: no cover
+        #     plt.plot(cx, cy, ".r", label="course")
+        #     plt.plot(x, y, "-b", label="trajectory")
+        #     plt.legend()
+        #     plt.xlabel("x[m]")
+        #     plt.ylabel("y[m]")
+        #     plt.axis("equal")
+        #     plt.grid(True)
 
-            plt.subplots(1)
-            plt.plot(t, [iv * 3.6 for iv in v], "-r")
-            plt.xlabel("Time[s]")
-            plt.ylabel("Speed[km/h]")
-            plt.grid(True)
-            plt.show()
+        #     plt.subplots(1)
+        #     plt.plot(t, [iv * 3.6 for iv in v], "-r")
+        #     plt.xlabel("Time[s]")
+        #     plt.ylabel("Speed[km/h]")
+        #     plt.grid(True)
+        #     plt.show()
 

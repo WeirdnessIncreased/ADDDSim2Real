@@ -45,17 +45,14 @@ for i in range(num_episodes):
             if activation_tar != last_activation_tar:
                 robot.update_activation_path(obs, activation_tar)
                 last_activation_tar = activation_tar
-            if math.hypot(cu_x - obs["vector"][5 + activation_tar][0], cu_y - obs["vector"][5 + activation_tar][1]) > goal_prec:
-                action = robot.get_activation_action(cu_x, cu_y)
-            else:
-                action = [0, 0, 0, 0]
-                action[2] = robot.get_activation_rotation(obs, activation_tar)
+            action = robot.get_activation_action(cu_x, cu_y)
+            action[2] = robot.get_activation_rotation(obs, activation_tar)
         else:
             action = [0, 0, 0, 0]
             break
 
         # Rotation matrix 
-        theta = obs["vector"][0][2]
+        theta = obs["vector"][0][2] + action[2] * 0.0001
         vx = action[0]
         vy = action[1]
 

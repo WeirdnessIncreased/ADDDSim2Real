@@ -26,7 +26,7 @@ k = 10  # control gain
 Kp = 0.10  # speed proportional gain
 dt = 0.04  # [s] time difference
 L = 0.19  # [m] Wheel base of vehicle
-max_steer = math.pi / 4  # [rad] max steering angle
+max_steer = math.pi / 6  # [rad] max steering angle
 
 show_animation = True
 
