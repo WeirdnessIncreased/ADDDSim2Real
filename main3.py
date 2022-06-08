@@ -35,6 +35,8 @@ x_fake = []
 y_fake = []
 ##### history for noise reduction #####
 
+activation_step_control = 0 # 是潜在未知 bug 的对应略策
+
 for i in range(num_episodes):
 
     obs = env.reset()
@@ -69,9 +71,11 @@ for i in range(num_episodes):
         cu_x, cu_y = obs["vector"][0][0], obs["vector"][0][1]
         print(f'=== Current position: x={cu_x}, y={cu_y}')
         if activation_tar != -1:
-            if activation_tar != last_activation_tar:
+            if activation_tar != last_activation_tar or activation_step_control >= 128:
+                activation_step_control = 0
                 robot.update_activation_path(obs, activation_tar)
                 last_activation_tar = activation_tar
+            activation_step_control += 1
             action = robot.get_activation_action(cu_x, cu_y)
             action[2] = robot.get_activation_rotation(obs, activation_tar)
         else:
@@ -90,6 +94,7 @@ for i in range(num_episodes):
         la_x, la_y = obs["vector"][0][0], obs["vector"][0][1]
 
         print(f"=== Next action: {action}")
+        print(f"=== Step control: {activation_step_control}")
         obs, reward, done, info = env.step(action)
 
 

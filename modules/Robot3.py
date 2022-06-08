@@ -83,7 +83,7 @@ class Robot:
                 for y in np.arange(ob[1] - 0.15, ob[1] + 0.15, obstacle_prec):
                     self.ox.append(x)
                     self.oy.append(y)
-                    print(x, y)
+                    # print(x, y)
 
     def update_state(self, obs):
         vector_data = obs["vector"]
@@ -148,7 +148,7 @@ class Robot:
 
         # self.path = MotionController.CubicSplinePath(path_x, path_y)
 
-        print(path_x, path_y)
+        # print(path_x, path_y)
 
         self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.10)
 

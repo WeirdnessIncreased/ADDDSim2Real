@@ -168,7 +168,7 @@ class AStarPlanner:
         if is_start:
             minn = round(min_pos / self.resolution)
             maxx = round(max_pos / self.resolution)
-            print("[[[[[[[[]]]]]]]]   ", ret, minn, maxx)
+            # print("[[[[[[[[]]]]]]]]   ", ret, minn, maxx)
             if ret <= minn:
                 ret = minn + 1
             elif ret >= maxx:
