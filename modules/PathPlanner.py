@@ -15,6 +15,9 @@ import matplotlib.pyplot as plt
 
 show_animation = False
 
+robot_radius = 0.18
+
+a_star = None
 
 class AStarPlanner:
 
@@ -35,7 +38,7 @@ class AStarPlanner:
         self.obstacle_map = None
         self.x_width, self.y_width = 0, 0
         self.motion = self.get_motion_model()
-        print("=== Calculating obstacle map")
+        # print("=== Calculating obstacle map")
         self.calc_obstacle_map(ox, oy)
 
     class Node:
@@ -96,7 +99,7 @@ class AStarPlanner:
                     plt.pause(0.001)
 
             if abs(current.x -  goal_node.x) < goal_prec and abs(current.y - goal_node.y) < goal_prec:
-                print("Find goal")
+                # print("Find goal")
                 goal_node.parent_index = current.parent_index
                 goal_node.cost = current.cost
                 break
@@ -240,6 +243,17 @@ class AStarPlanner:
 
         return motion
 
+def set_conf_robot_radius():
+    global robot_radius
+    robot_radius = 0.22
+
+def set_planner(ox, oy):
+    global a_star
+    grid_size = 0.20
+    goal_prec = 0.50 / grid_size
+    a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
+
+
 def get_path(sx, sy, gx, gy, ox, oy):
 
     if show_animation:  # pragma: no cover
@@ -250,9 +264,8 @@ def get_path(sx, sy, gx, gy, ox, oy):
         plt.axis("equal")
 
     grid_size = 0.20
-    robot_radius = 0.18
     goal_prec = 0.50 / grid_size
-    a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
+    global a_star
     rx, ry = a_star.planning(sx, sy, gx, gy, goal_prec)
 
     if show_animation:
@@ -272,7 +285,7 @@ def main():
     sy = 10.0  # [m]
     gx = 50.0  # [m]
     gy = 50.0  # [m]
-    grid_size = 2.0  # [m]
+    grid_size = 1.8  # [m]
     robot_radius = 1.0  # [m]
 
     # set obstacle positions

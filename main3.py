@@ -10,7 +10,7 @@ import history.kalman as his_kal
 
 num_episodes = 20
 num_steps_per_episode = int(5e8)
-env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=1) 
+env = CogEnvDecoder(env_name="../mac_confrontation_v2/cog_confrontation_env.app", no_graphics=False, time_scale=1, worker_id=1) 
 
 robot = None
 goal_prec = 0.5
@@ -66,11 +66,13 @@ for i in range(num_episodes):
     x_fake = []
     y_fake = []
 
+    just_started_conf = True
+
     for j in range(num_steps_per_episode):
         activation_tar = robot.check_activation(obs)
         cu_x, cu_y = obs["vector"][0][0], obs["vector"][0][1]
-        print(f'=== Current position: x={cu_x}, y={cu_y}')
-        if activation_tar != -1:
+        # print(f'=== Current position: x={cu_x}, y={cu_y}')
+        if not just_started_conf and activation_tar != -1:
             if activation_tar != last_activation_tar or activation_step_control >= 128:
                 activation_step_control = 0
                 robot.update_activation_path(obs, activation_tar)
@@ -79,9 +81,10 @@ for i in range(num_episodes):
             action = robot.get_activation_action(cu_x, cu_y)
             action[2] = robot.get_activation_rotation(obs, activation_tar)
         else:
-            # action = robot.get_fight_action(obs)
-            action = [0, 0, 0, 0]
-            break
+            if just_started_conf == True:
+                PathPlanner.set_conf_robot_radius()
+                just_started_conf = False
+            action = robot.get_fight_action(obs)
 
         # Rotation matrix 
         theta = obs["vector"][0][2] + action[2] * 0.0001
@@ -93,10 +96,11 @@ for i in range(num_episodes):
 
         la_x, la_y = obs["vector"][0][0], obs["vector"][0][1]
 
-        print(f"=== Next action: {action}")
-        print(f"=== Step control: {activation_step_control}")
+        # print(f"=== Next action: {action}")
+        # print(f"=== Step control: {activation_step_control}")
         obs, reward, done, info = env.step(action)
 
+        if done: break
 
         # if robot.tar_v_x != 0 and obs["vector"][0][0] != last_x:
         #     t1 = (obs["vector"][0][0] - last_x) / robot.tar_v_x
@@ -148,7 +152,24 @@ for i in range(num_episodes):
         y_perf.append((yyy-y)/noise_y)  
         ##### kalman filter for localization #####
 
-        print(f'=== Noise: x={noise_x} y={noise_y} === Fix: x={x-xxx}, y={y-yyy} === performance: x={(xxx-x)/noise_x} y={(yyy-y)/noise_y}')
+        # print(f'=== Noise: x={noise_x} y={noise_y} === Fix: x={x-xxx}, y={y-yyy} === performance: x={(xxx-x)/noise_x} y={(yyy-y)/noise_y}')
+
+        ##### check rotation #####
+        # plt.clf()
+        # w = obs['vector'][0][2]
+        # x1, y1 = obs['vector'][0][0], obs['vector'][0][1]
+        # x2, y2 = obs['vector'][3][0], obs['vector'][3][1]
+        # plt.plot([x1], [y1], 'xb')
+        # plt.plot([x2], [y2], 'xr')
+        # plt.plot([x1, x2], [y1, y2], '-', color='0.9')
+        # plt.plot([0, 0, 8, 8], [0, 4, 0, 4], 'x', color='0')
+        # b = y1 - np.tan(w) * x1
+        # xx = np.arange(x1-2, x1+2, 0.3)
+        # yy = xx * np.tan(w) + b
+        # plt.plot(xx, yy, '-g')
+        # plt.pause(0.001)
+        # plt.show(block=False)
+        ##### check rotation #####
 
     plt.plot(x_real, y_real, "-r", label="real")
     plt.plot(x_fake, y_fake, ".b", label="fake")
@@ -157,5 +178,4 @@ for i in range(num_episodes):
     plt.grid(True)
     plt.show(block=False)
     plt.pause(2)
-    plt.close('all')
 
