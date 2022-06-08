@@ -258,7 +258,8 @@ def get_path(sx, sy, gx, gy, ox, oy):
     if show_animation:
         plt.plot(rx, ry, "-r")
         plt.pause(0.001)
-        plt.show()
+        plt.show(block=False)
+        plt.pause(0.2)
 
     return rx, ry
 
@@ -308,7 +309,9 @@ def main():
     if show_animation:  # pragma: no cover
         plt.plot(rx, ry, "-r")
         plt.pause(0.001)
-        plt.show()
+        plt.show(block=False)
+        plt.pause(1)
+        plt.close('all')
 
 if __name__ == '__main__':
     main()

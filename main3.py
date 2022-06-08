@@ -5,6 +5,8 @@ from modules.Robot3 import Robot
 from modules import PathPlanner as PathPlanner
 from Cogenvdecoder.CogEnvDecoder import CogEnvDecoder
 from modules import extended_kalman_filter as ex
+import matplotlib.pyplot as plt
+import history.kalman as his_kal
 
 num_episodes = 20
 num_steps_per_episode = int(5e8)
@@ -22,22 +24,45 @@ bias_y = 0
 
 map_size = [8.08, 4.48]
 
+##### history for noise reduction #####
+x_perf = []
+y_perf = []
+x_esti = []
+y_esti = []
+x_real = []
+y_real = []
+x_fake = []
+y_fake = []
+##### history for noise reduction #####
+
 for i in range(num_episodes):
 
     obs = env.reset()
     robot = Robot(obs)
 
     ##### noise #####
-    obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_x
-    obs["vector"][0][1] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_y
+    noise_x = np.random.uniform(-0.1, 0.1, 1)[0]
+    noise_y = np.random.uniform(-0.1, 0.1, 1)[0]
+    obs["vector"][0][0] += noise_x + bias_x
+    obs["vector"][0][1] += noise_y + bias_y
     ##### noise #####
 
     x, y = obs["vector"][0][0], obs["vector"][0][1]
-    obs["vector"][0][0] = min(max(x, 0), map_size[0])
-    obs["vector"][0][1] = min(max(y, 0), map_size[1])
+    obs["vector"][0][0] = min(max(x, 0.05), map_size[0] - 0.05)
+    obs["vector"][0][1] = min(max(y, 0.05), map_size[1] - 0.05)
 
     last_activation_tar = -1
     t1, t2 = 0.04, 0.04
+
+    ex.clear(obs['vector'][0][0], obs['vector'][0][1])
+    x_perf = []
+    y_perf = []
+    x_esti = []
+    y_esti = []
+    x_real = []
+    y_real = []
+    x_fake = []
+    y_fake = []
 
     for j in range(num_steps_per_episode):
         activation_tar = robot.check_activation(obs)
@@ -64,7 +89,7 @@ for i in range(num_episodes):
 
         la_x, la_y = obs["vector"][0][0], obs["vector"][0][1]
 
-        print(f"Next action: {action}")
+        print(f"=== Next action: {action}")
         obs, reward, done, info = env.step(action)
 
 
@@ -79,21 +104,53 @@ for i in range(num_episodes):
         # t2 = (cu_y - la_y) / vy
         # print(f"t1: {t1}     t2: {t2}")
 
+        x, y = obs["vector"][0][0], obs["vector"][0][1]
+
         ##### noise #####
-        obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_x
-        obs["vector"][0][1] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_y
+        noise_x = np.random.uniform(-0.1, 0.1, 1)[0]
+        noise_y = np.random.uniform(-0.1, 0.1, 1)[0]
+        obs["vector"][0][0] += noise_x + bias_x
+        obs["vector"][0][1] += noise_y + bias_y
         ##### noise #####
 
-        ideal_x = robot.cx[robot.target_idx]
-        ideal_y = robot.cy[robot.target_idx]
-        vt = robot.state.v
-        yaw = robot.state.yaw
-        xxx = obs["vector"][0][0]
-        yyy = obs["vector"][0][1]
-        xEst = ex.noise_reduce(xxx, yyy, yaw, vt, ideal_x, ideal_y)
+        ##### kalman filter for localization #####
+        xxx = obs['vector'][0][0]
+        yyy = obs['vector'][0][1]
+        yaw = obs['vector'][0][2]
+        xEst = ex.noise_reduce(xxx, yyy, yaw, math.hypot(vx, vy), action[2])
+
+        # ideal_x = robot.cx[robot.target_idx]
+        # ideal_y = robot.cy[robot.target_idx]
+        # vt = robot.state.v
+        # yaw = robot.state.yaw
+        # xEst = his_kal.noise_reduce(xxx, yyy, yaw, vt, ideal_x, ideal_y)
+
         obs["vector"][0][0] = xEst[0, 0]
         obs["vector"][0][1] = xEst[1, 0]
 
+        x_esti.append(xEst[0, 0])
+        y_esti.append(xEst[1, 0])
+        x_real.append(x)
+        y_real.append(y)
+        x_fake.append(xxx)
+        y_fake.append(yyy)
+
         x, y = obs["vector"][0][0], obs["vector"][0][1]
-        obs["vector"][0][0] = min(max(x, 0), map_size[0])
-        obs["vector"][0][1] = min(max(y, 0), map_size[1])
+        obs["vector"][0][0] = min(max(x, 0.05), map_size[0] - 0.05)
+        obs["vector"][0][1] = min(max(y, 0.05), map_size[1] - 0.05)
+
+        x_perf.append((xxx-x)/noise_x)  
+        y_perf.append((yyy-y)/noise_y)  
+        ##### kalman filter for localization #####
+
+        print(f'=== Noise: x={noise_x} y={noise_y} === Fix: x={x-xxx}, y={y-yyy} === performance: x={(xxx-x)/noise_x} y={(yyy-y)/noise_y}')
+
+    plt.plot(x_real, y_real, "-r", label="real")
+    plt.plot(x_fake, y_fake, ".b", label="fake")
+    plt.plot(x_esti, y_esti, "-g", label="estimation")
+    plt.title(f'average performance: x={np.mean(x_perf)}, y={np.mean(y_perf)}')
+    plt.grid(True)
+    plt.show(block=False)
+    plt.pause(2)
+    plt.close('all')
+

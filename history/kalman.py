@@ -17,12 +17,12 @@ from utils.angle import rot_mat_2d
 
 # Covariance for EKF simulation
 Q = np.diag([
-    0.1,  # variance of location on x-axis
-    0.1,  # variance of location on y-axis
-    0.0,  # variance of yaw angle
+    0.5,  # variance of location on x-axis
+    0.5,  # variance of location on y-axis
+    np.deg2rad(0),  # variance of yaw angle
     0.0  # variance of velocity
 ]) ** 2  # predict state covariance
-R = np.diag([0.1, 0.1]) ** 2  # Observation x,y position covariance
+R = np.diag([0.5, 0.5]) ** 2  # Observation x,y position covariance
 
 #  Simulation parameter
 INPUT_NOISE = np.diag([0.7, np.deg2rad(0.0)]) ** 2
@@ -32,9 +32,6 @@ DT = 0.04  # time tick [s]
 SIM_TIME = 50.0  # simulation time [s]
 
 show_animation = True
-
-his_x_est = []
-his_p_est = []
 
 
 def calc_input(vt, omega):
@@ -163,26 +160,27 @@ def plot_covariance_ellipse(xEst, PEst):  # pragma: no cover
     plt.plot(px, py, "--r")
 
 
-def noise_reduce(x, y, yaw, v, w):
+def noise_reduce(x, y, yaw, v, x_e, y_e):
+    # State Vector [x y yaw v]'
+    # xEst = np.zeros((4, 1))
+    xEst = np.array([[x_e], [y_e], [yaw], [v]])
+    # xTrue = np.zeros((4, 1))
+    xTrue = np.array([[x], [y], [yaw], [v]])
+    PEst = np.eye(4)
 
-    xEst = his_x_est[-1]
-    pEst = his_p_est[-1]
+    # xDR = np.zeros((4, 1))  # Dead reckoning
+    xDR = np.array([[x_e], [y_e], [yaw], [v]])
 
-    u = np.array([[v], [w]]) # 角度尺度有问题, 速度坐标有问题吗？
-    x = np.array([[x], [y]])
+    # history
+    hxEst = xEst
+    hxTrue = xTrue
+    hxDR = xTrue
+    hz = np.zeros((2, 1))
 
-    xEst, pEst = ekf_estimation(xEst, pEst, x, u)
+    u = calc_input(v, 0)
 
-    his_x_est.append(xEst)
-    his_p_est.append(pEst)
-
+    xTrue, z, xDR, ud = observation(xTrue, xDR, u)
+    xEst, PEst = ekf_estimation(xEst, PEst, z, ud)
     return xEst
-
-def clear(x, y):
-    global his_x_est
-    global his_p_est
-    his_x_est = [np.array([[x], [y], [0], [0]])]
-    if len(his_p_est) == 0: 
-        his_p_est = [np.eye(4)]
 
 

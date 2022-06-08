@@ -22,7 +22,7 @@ class Spline:
 
         self.nx = len(x)  # dimension of x
         h = np.diff(x)
-        h[np.argwhere(h == 0).flatten()] = 1e-8
+        h[np.argwhere(h == 0).flatten()] = 1e-6
 
         # calc coefficient c
         self.a = [iy for iy in y]
@@ -40,6 +40,10 @@ class Spline:
                 (self.c[i + 1] + 2.0 * self.c[i]) / 3.0
             self.b.append(tb)
 
+        self.b.append(self.b[-1]) # to fix the list out of index bug
+        self.d.append(self.d[-1]) # to fix the list out of index bug
+        print('a: ', self.a,'\nb: ', self.b, '\nc: ', self.c, '\nd: ', self.d)
+
     def calc(self, t):
         """
         Calc position
@@ -54,6 +58,8 @@ class Spline:
             return None
 
         i = self.__search_index(t)
+        print('search index result i: ', i)
+
         dx = t - self.x[i]
         result = self.a[i] + self.b[i] * dx + \
             self.c[i] * dx ** 2.0 + self.d[i] * dx ** 3.0
@@ -96,6 +102,7 @@ class Spline:
         """
         search data segment index
         """
+        print('to be search self.x and x: ', self.x, x)
         return bisect.bisect(self.x, x) - 1
 
     def __calc_A(self, h):
@@ -181,8 +188,11 @@ def calc_spline_course(x, y, ds=0.1):
     sp = Spline2D(x, y)
     s = list(np.arange(0, sp.s[-1], ds))
 
+    print('s: ', s)
+
     rx, ry, ryaw, rk = [], [], [], []
     for i_s in s:
+        print('i_s: ', i_s)
         ix, iy = sp.calc_position(i_s)
         rx.append(ix)
         ry.append(iy)

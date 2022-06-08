@@ -51,7 +51,7 @@ dt = 0.04  # [s] time difference
 L = 0.18  # [m] Wheel base of vehicle
 max_steer = math.pi / 6  # [rad] max steering angle
 
-show_animation = False
+show_animation = True
 
 show_speed = False
 show_pos = False
@@ -78,17 +78,12 @@ class Robot:
         sx, sy = vector_data[0][0], vector_data[0][1]
         dynamic_obstacles = [vector_data[5][:2], vector_data[6][:2], vector_data[7][:2], vector_data[8][:2], vector_data[9][:2]]
 
-        print(dynamic_obstacles)
-        print(self.ox, self.oy)
-
         for ob in dynamic_obstacles:
             for x in np.arange(ob[0] - 0.15, ob[0] + 0.15, obstacle_prec):
                 for y in np.arange(ob[1] - 0.15, ob[1] + 0.15, obstacle_prec):
                     self.ox.append(x)
                     self.oy.append(y)
                     print(x, y)
-
-        print(self.ox, self.oy)
 
     def update_state(self, obs):
         vector_data = obs["vector"]
@@ -143,6 +138,9 @@ class Robot:
         if origin_end_x not in path_x:
             path_x = path_x + [origin_end_x]
             path_y = path_y + [origin_end_y]
+
+        path_x += [gx]
+        path_y += [gy]
         
         if print_path:
             print(path_x)
@@ -150,7 +148,9 @@ class Robot:
 
         # self.path = MotionController.CubicSplinePath(path_x, path_y)
 
-        self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.1)
+        print(path_x, path_y)
+
+        self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.10)
 
         if show_spline:
             plt.plot(path_x, path_y, "xb", label="input")
@@ -282,6 +282,7 @@ class Robot:
                 plt.grid(True)
                 plt.title("Speed[km/h]:" + str(state.v * 3.6)[:4])
                 plt.pause(0.001)
+        plt.close('all')
 
         # if show_animation:  # pragma: no cover
         #     plt.plot(cx, cy, ".r", label="course")
