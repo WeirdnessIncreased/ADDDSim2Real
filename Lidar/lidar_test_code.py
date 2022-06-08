@@ -14,8 +14,7 @@ def check_state_read_data( state, ang, dist, info=None ):
     # laser scan distances from -135 deg to +135 deg, scan angle resolution is 270/(61-1) 
     print("laser shape: {}, max distance: {}, min distance: {}".format(laser_data.shape, np.max(laser_data), np.min(laser_data)))
     print("self pose: {}, self info: {}, enemy active: {}, enemy pose: {}, enemy_info: {}".format(vector_data[0], vector_data[1], vector_data[2], vector_data[3], vector_data[4]))
-
-    # print( vector_data[0][2] )
+    x, y = lidar_data_mapping.lidar_mapping( vector_data, laser_data )
     for i in range( 0, 61 ):
         #print( (float)( -vector_data[0][2] + ( 135 * ( i - 30 ) / 30 * pi / 180) )  )
         ang.append((float)( pi * 0.5 - vector_data[0][2] + ( 135 * ( i - 30 ) / 30 * pi / 180) ))
@@ -59,12 +58,8 @@ for i in range(num_episodes):
         #cv2.waitKey(1)
         ang, dist, vector_data = check_state_read_data( obs, ang, dist, info )
         occupancy_map = lidar_data_mapping.lidar_to_gird_map( ang, dist )
-        obstacle_map = Convolution_matching.get_obstacle(vector_data)
-        # result, tx, ty = Convolution_matching.numpy_conv( obstacle_map, occupancy_map )
-        # print( np.max(result), np.min(result))
-        # print( tx, ty )
-        # print(reward, done)
-        # action = [0, 0, 0.9, 0]
-        # obs, reward, done, info = env.step(action)
-        # ang, dist, vector_data = check_state_read_data( obs, ang, dist, info )
-        # occupancy_map = lidar_data_mapping.lidar_to_gird_map( ang, dist )
+        obstacle_map, x, y = Convolution_matching.get_obstacle(vector_data)
+        result, tx, ty = Convolution_matching.numpy_conv( obstacle_map, occupancy_map )
+        x = ( x + tx ) * 0.02
+        y = ( 224 - ( y + ty ) ) * 0.02
+        print( "final", x, y )
