@@ -98,7 +98,13 @@ class Robot:
                     self.oy.append(y)
                     self.conf_ox.append(x)
                     self.conf_oy.append(y)
-
+        ob_for_dis_x = []
+        ob_for_dis_y = []
+        ob_for_dis_w = []
+        for name in dynamic_obstacles:
+            if name not in ['B2', 'B5', 'B8']:
+                ob_for_dis_x.append((dynamic_obstacles[name][0] + 
+                
         PathPlanner.set_planner(self.ox, self.oy)
 
     def update_state(self, obs):
@@ -307,6 +313,7 @@ class Robot:
         angl_control = lambda x: np.arccos(((x[0] - ex) * (sx - ex) + (x[1] - ey) * (sy - ey)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 10
         # cros_control = lambda x: not (np.sign(x[0] - ex) == np.sign(ex - sx) or np.sign(x[1] - ey) == np.sign(ey - sy))
         cros_control = lambda x: math.hypot(x[0] - ex, x[1] - ey) >= math.hypot(x[0] - sx, x[1] - sy)
+        obst_control = lambda x: np.all([abs(x - i) > 0.2 for i in 
 
         cand = list(filter(dist_control, cand))
         cand = list(filter(angl_control, cand))
@@ -330,7 +337,11 @@ class Robot:
         cand = list(filter(angl_control, cand))
         cand = list(filter(cros_control, cand))
 
-        tar = cand[np.random.choice(np.arange(len(cand)))]
+        # tar = cand[np.random.choice(np.arange(len(cand)))]
+        try:
+            tar = cand[np.random.choice(np.arange(len(cand)))]
+        except:
+            tar = critical_points[np.random.choice(np.arange(len(critical_points)))] 
         # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         # print('cand:',cand)
         # print('tar:', tar)
