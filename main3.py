@@ -11,6 +11,7 @@ import history.kalman as his_kal
 num_episodes = 20
 num_steps_per_episode = int(5e8)
 env = CogEnvDecoder(env_name="../mac_confrontation_v2/cog_confrontation_env.app", no_graphics=False, time_scale=1, worker_id=1) 
+# env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=1) 
 
 robot = None
 goal_prec = 0.5
@@ -82,7 +83,7 @@ for i in range(num_episodes):
             action[2] = robot.get_activation_rotation(obs, activation_tar)
         else:
             if just_started_conf == True:
-                PathPlanner.set_conf_robot_radius()
+                # PathPlanner.set_conf_robot_radius()
                 just_started_conf = False
             action = robot.get_fight_action(obs)
 
@@ -96,7 +97,7 @@ for i in range(num_episodes):
 
         la_x, la_y = obs["vector"][0][0], obs["vector"][0][1]
 
-        # print(f"=== Next action: {action}")
+        print(f"=== Next action: {action}")
         # print(f"=== Step control: {activation_step_control}")
         obs, reward, done, info = env.step(action)
 

@@ -67,7 +67,7 @@ show_pos = False
 show_spline = False
 print_path = False
 
-target_speed = 24  #[m/s]
+target_speed = 2  #[m/s]
 
 ################# The Robot Agent #################
 
@@ -169,7 +169,7 @@ class Robot:
             plt.show()
 
         fake_yaw = np.arctan2(path_y[1] - path_y[0], path_x[1] - path_x[0])
-        self.state = Controller3.State(x=sx, y=sy, yaw=fake_yaw, v=0.0)
+        self.state = Controller3.State(x=sx, y=sy, yaw=fake_yaw, v=2.0)
         self.target_idx, _ = Controller3.calc_target_index(self.state, self.cx, self.cy)
 
         if show_animation:
@@ -184,6 +184,8 @@ class Robot:
         last_x, last_y = self.state.x, self.state.y
 
         self.state.update(ai, di, sx, sy)
+
+        print('==', self.state.v)
 
         self.tar_v_x = self.state.v * np.cos(self.state.yaw)
         self.tar_v_y = self.state.v * np.sin(self.state.yaw)
@@ -272,11 +274,12 @@ class Robot:
             # action[0] = np.random.rand()
             # action[1] = np.random.rand()
 
-            # future_x, future_y = cu_x - action[0] * dt * 0.1, cu_y - action[1] * dt * 0.1
+            future_x, future_y = cu_x - action[0] * dt, cu_y - action[1] * dt
 
             # rotation
             # tar = np.arctan2(en_y - cu_y, en_x - cu_x)
-            tar = np.arctan((en_y - cu_y) / (en_x - cu_x))
+            # tar = np.arctan((en_y - cu_y) / (en_x - cu_x))
+            tar = np.arctan((en_y - future_y) / (en_x - future_x))
             if np.tan(tar) * (en_y - cu_y) < 0:
                 tar += math.pi
             if abs(tar - cu_w) > math.pi:
@@ -284,7 +287,7 @@ class Robot:
             else:
                 action[2] = + (tar - cu_w) / dt * 1.2
 
-            if abs(tar - cu_w) > math.pi / 12:
+            if abs(tar - cu_w) > math.pi / 12 or math.hypot(cu_x - en_x, cu_y - en_y) > 3:
                 action[3] = 0
 
             # if action[3]:
@@ -368,7 +371,7 @@ class Robot:
         self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.10)
 
         fake_yaw = np.arctan2(path_y[1] - path_y[0], path_x[1] - path_x[0])
-        self.state = Controller3.State(x=sx, y=sy, yaw=fake_yaw, v=0.0)
+        self.state = Controller3.State(x=sx, y=sy, yaw=fake_yaw, v=2)
         self.target_idx, _ = Controller3.calc_target_index(self.state, self.cx, self.cy)
 
         return tar 
