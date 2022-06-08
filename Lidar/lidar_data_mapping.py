@@ -5,6 +5,44 @@ import matplotlib.pyplot as plt
 import numpy as np
 from cmath import pi
 
+def bresenham( start, end ):
+    # en.wikipedia.org/wiki/Bresenham's_line_algorithm
+    x1, y1 = start
+    x2, y2 = end
+    dx = x2 - x1
+    dy = y2 - y1
+    is_steep = abs(dy) > abs(dx) # determine how steep the line is
+
+    if is_steep: # rotate line
+        x1, y1 = y1, x1
+        x2, y2 = y2, x2
+
+    swapped = False  # swap start and end points if necessary and store swap state
+    if x1 > x2:
+        x1, x2 = x2, x1
+        y1, y2 = y2, y1
+        swapped = True
+    
+    dx = x2 - x1  # recalculate differentials
+    dy = y2 - y1  # recalculate differentials
+    error = int(dx / 2.0)  # calculate error
+    y_step = 1 if y1 < y2 else -1 # iterate over bounding box generating points between start and end
+
+    # iterate over bounding box generating points between start and end
+    y = y1
+    points = []
+    for x in range(x1, x2 + 1):
+        coord = [y, x] if is_steep else (x, y)
+        points.append(coord)
+        error -= abs(dy)
+        if error < 0:
+            y += y_step
+            error += dx
+    if swapped:  # reverse the list if the coordinates were swapped
+        points.reverse()
+    points = np.array(points)
+    return points
+
 def lidar_to_gird_map( ang, dist ):
     xy_resolution = 0.02
     ox = np.sin(ang) * dist
@@ -16,6 +54,10 @@ def lidar_to_gird_map( ang, dist ):
     occupancy_map = np.zeros( (150, 150), dtype = int )
     for (x, y) in zip(ox, oy):
         if( abs(x / xy_resolution) < 75 and abs(y / xy_resolution) < 75 ):
+            '''
+            points = bresenham( ( 75, 75 ), ( (int)(75 + x / xy_resolution), (int)(75 + y / xy_resolution) ) )
+            for fa in points:
+                occupancy_map[fa[0]][fa[1]] = -1'''
             occupancy_map[ (int)(75 + x / xy_resolution), (int)(75 + y / xy_resolution) ] = 1
             # print( 150 + x / xy_resolution, 150 - y / xy_resolution )
 
@@ -32,7 +74,7 @@ def lidar_to_gird_map( ang, dist ):
     '''
     return occupancy_map
 
-def get_obstacle( vector_data ):
+def get_obstacle():
     fixed_obstacle = {
         'B1': [ 7.08, 1.00, 8.08, 1.2],
         'B2': [ 5.78, 2.14 ,6.58 , 2.34], 
@@ -47,7 +89,6 @@ def get_obstacle( vector_data ):
         'B11': [ 8.08, 0, 8.1, 4.48],
         'B12': [ 0, 0, 8.1, 0.02 ],
         'B13': [ 0, 4.48, 8.08, 4.50 ]
-
     }
 
     ox1, oy1, ox2, oy2 = [], [], [], []
@@ -61,16 +102,21 @@ def get_obstacle( vector_data ):
     obstacles = list(zip(ox1, oy1, ox2, oy2))
     # 8.08 / 0.02 = 404
     # 4.48 / 0.02 = 224
-    obstacle_map = np.zeros( ( 705, 525 ) , dtype=int)
-    
+    obstacle_map = np.zeros( ( 705, 525 ) , dtype=int )
+    '''
+    for i in range( 150, 555 ):
+        for j in range( 150, 375 ):
+            obstacle_map[i][j] = -1
+    '''        
     for pos in obstacles:
         for x in np.arange(pos[0], pos[2]):
             for y in np.arange(pos[1], pos[3]):    
                 obstacle_map[ (int)( x + 150 ), (int)( y + 150 ) ] = 1
 
-    # plt.figure(1, figsize=(10, 4))
-    # plt.subplot(122)
-    # plt.imshow(obstacle_map)
+    return obstacle_map
+
+def cut_obstacle( vector_data, obstacle_map ):
+    # print(obstacle_map)
     x = int(vector_data[0] / 0.02) + 150
     y = int(vector_data[1] / 0.02) + 150
     # print( "x,y ", x - 150 - 150, 224 + 150 - y - 150 )
@@ -79,6 +125,8 @@ def get_obstacle( vector_data ):
     return obstacle_map, x - 150 - 150, 224 - y
 
 def numpy_conv(inputs, filter, padding="VALID"):
+    inputs = np.array(inputs)
+    filter = np.array(filter)
     H, W = inputs.shape
     filter_size_x, filter_size_y = filter.shape
     # print( "size", H, W, filter_size_x, filter_size_y)
@@ -100,8 +148,61 @@ def numpy_conv(inputs, filter, padding="VALID"):
                 tx = r
                 ty = c
                 # print( "1", tx, ty, Max_num )
+                x_0, y_0 = [], []
+                x_1, y_1 = [], []
+                x_2, y_2 = [], []
+                for i in range( 0, 300 ):
+                    for j in range( 0, 300 ):
+                        if( inputs[i][j] == 0 ):
+                            x_0.append(i)
+                            y_0.append(j)
+                        if( inputs[i][j] == 1 ):
+                            x_1.append(i)
+                            y_1.append(j)
+                        if( inputs[i][j] == -1 ):
+                            x_2.append(i)
+                            y_2.append(j)    
+
+                plt.clf()
+                # plt.plot( x_0, y_0, '.g' )
+                plt.plot( x_1, y_1, '.' )
+                # plt.plot( x_2, y_2, '.r' )
+
+                x_0, y_0 = [], []
+                x_1, y_1 = [], []
+                x_2, y_2 = [], []
+                for i in range( 0, 150 ):
+                    for j in range( 0, 150 ):
+                        if( filter[i][j] == 0 ):
+                            x_0.append(i + r)
+                            y_0.append(j + c)
+                        if( filter[i][j] == 1 ):
+                            x_1.append(i + r)
+                            y_1.append(j + c)
+                        if( filter[i][j] == -1 ):
+                            x_2.append(i + r)
+                            y_2.append(j + c) 
+
+                # plt.plot( x_0, y_0, '.g' )
+                plt.plot( x_1, y_1, '.b' )
+                plt.plot( x_2, y_2, '.r' )
+                plt.pause(0.001)
+                plt.show( block = False )
             result[r, c] = conv_sum
+            
     return tx + 75, ty + 75
+
+ori_obstacle_map = get_obstacle()
+g_obstacle_map = get_obstacle()
+
+def update(obstacle):
+    # print( obstacle )
+    global g_obstacle_map
+    g_obstacle_map = ori_obstacle_map
+    for( xx, yy ) in obstacle:
+        for x in np.arange( xx / 0.02 - 7.5, xx / 0.02 + 7.5 ):
+            for y in np.arange( yy / 0.02 - 7.5, yy / 0.02 + 7.5 ):    
+                g_obstacle_map[ (int)( x + 150 ), (int)( y + 150 ) ] = 1
 
 def lidar_mapping( vector_data, laser_data ):
     ang, dist = [], []
@@ -111,8 +212,8 @@ def lidar_mapping( vector_data, laser_data ):
         dist.append( (float)(laser_data[i]) )
     
     occupancy_map = lidar_to_gird_map( ang, dist )
-    obstacle_map, x, y = get_obstacle( vector_data[0] )
-    tx, ty = numpy_conv( obstacle_map, occupancy_map )
+    cutted_obstacle_map, x, y = cut_obstacle( vector_data[0], g_obstacle_map )
+    tx, ty = numpy_conv( cutted_obstacle_map, occupancy_map )
     x = ( x + tx ) * 0.02
     y = ( 224 - ( y + ty ) ) * 0.02
     print( "final", x, y )
