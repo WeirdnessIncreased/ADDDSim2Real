@@ -17,10 +17,9 @@ ob_for_dis_x = []
 ob_for_dis_y = []
 ob_for_dis_w = []
 for name in fixed_obstacles:
-    if name not in ['B2', 'B5', 'B8']:
-        ob_for_dis_x.append((fixed_obstacles[name][0] + fixed_obstacles[name][2]) / 2)
-        ob_for_dis_y.append((fixed_obstacles[name][1] + fixed_obstacles[name][3]) / 2)
-        ob_for_dis_w.append([(fixed_obstacles[name][2] - fixed_obstacles[name][0]) / 2, (fixed_obstacles[name][3] - fixed_obstacles[name][1]) / 2])
+    ob_for_dis_x.append((fixed_obstacles[name][0] + fixed_obstacles[name][2]) / 2)
+    ob_for_dis_y.append((fixed_obstacles[name][1] + fixed_obstacles[name][3]) / 2)
+    ob_for_dis_w.append([(fixed_obstacles[name][2] - fixed_obstacles[name][0]) / 2, (fixed_obstacles[name][3] - fixed_obstacles[name][1]) / 2])
 
 map_size = [8.08, 4.48]
 critical_points = []
@@ -30,8 +29,8 @@ for i in np.arange(0, map_size[0], map_size[0] / 40):
         width_y = map_size[1] / 50
         critical_points.append([i + width_x / 2, j + width_y / 2])
 
-obst_control = lambda x: all((abs(x[0] - ob_for_dis_x[i]) > ob_for_dis_w[i][0] + 0.2 or abs(x[1] - ob_for_dis_y[i]) > ob_for_dis_w[i][1] + 0.2) for i in range(len(ob_for_dis_x)))
-edge_control = lambda x: x[0] > 0.3 and x[0] < 8.05 and x[1] > 0.3 and x[1] < 4.45
+obst_control = lambda x: all((abs(x[0] - ob_for_dis_x[i]) > ob_for_dis_w[i][0] + 0.4 or abs(x[1] - ob_for_dis_y[i]) > ob_for_dis_w[i][1] + 0.4) for i in range(len(ob_for_dis_x)))
+edge_control = lambda x: x[0] > 0.4 and x[0] < 8.04 and x[1] > 0.4 and x[1] < 4.44
 critical_points = list(filter(obst_control, critical_points))
 critical_points = list(filter(edge_control, critical_points))
 

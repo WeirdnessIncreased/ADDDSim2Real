@@ -85,7 +85,7 @@ class Robot:
         self.state = None
         self.tar_v_x = None
         self.tar_v_y = None
-        self.random_tar = None
+        self.random_tar = np.array([None, None])
         self.la_en_b = 24
 
         self.ob_for_dis_x = [] 
@@ -278,7 +278,7 @@ class Robot:
             
 
             # random walk
-            if self.random_tar == None or math.hypot(self.random_tar[0] - cu_x, self.random_tar[1] - cu_y) < 0.5:
+            if (self.random_tar == None).all() or math.hypot(self.random_tar[0] - cu_x, self.random_tar[1] - cu_y) < 0.5:
             # if self.check_tar(cu_x, cu_y, en_x, en_y) == False:
                 self.random_tar = self.get_fight_route(cu_x, cu_y, en_x, en_y)
             action[0], action[1] = self.get_fight_velocity(cu_x, cu_y)
@@ -318,7 +318,7 @@ class Robot:
         angl_control = lambda x: np.arccos(((x[0] - ex) * (sx - ex) + (x[1] - ey) * (sy - ey)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 10
         # cros_control = lambda x: not (np.sign(x[0] - ex) == np.sign(ex - sx) or np.sign(x[1] - ey) == np.sign(ey - sy))
         cros_control = lambda x: math.hypot(x[0] - ex, x[1] - ey) >= math.hypot(x[0] - sx, x[1] - sy)
-        obst_control = lambda x: all((abs(x[0] - self.ob_for_dis_x[i]) > self.ob_for_dis_w[i][0] + 0.2 or abs(x[1] - self.ob_for_dis_y[i]) > self.ob_for_dis_w[i][1] + 0.2) for i in range(len(self.ob_for_dis_x)))
+        obst_control = lambda x: all((abs(x[0] - self.ob_for_dis_x[i]) > self.ob_for_dis_w[i][0] + 0.4 or abs(x[1] - self.ob_for_dis_y[i]) > self.ob_for_dis_w[i][1] + 0.4) for i in range(len(self.ob_for_dis_x)))
 
         cand = list(filter(dist_control, cand))
         cand = list(filter(angl_control, cand))
@@ -338,7 +338,7 @@ class Robot:
         angl_control = lambda x: np.arccos(((x[0] - ex) * (sx - ex) + (x[1] - ey) * (sy - ey)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 10
         # cros_control = lambda x: not (np.sign(x[0] - ex) == np.sign(ex - sx) or np.sign(x[1] - ey) == np.sign(ey - sy))
         cros_control = lambda x: math.hypot(x[0] - ex, x[1] - ey) >= math.hypot(x[0] - sx, x[1] - sy)
-        obst_control = lambda x: all((abs(x[0] - self.ob_for_dis_x[i]) > self.ob_for_dis_w[i][0] + 0.2 or abs(x[1] - self.ob_for_dis_y[i]) > self.ob_for_dis_w[i][1] + 0.2) for i in range(len(self.ob_for_dis_x)))
+        obst_control = lambda x: all((abs(x[0] - self.ob_for_dis_x[i]) > self.ob_for_dis_w[i][0] + 0.4 or abs(x[1] - self.ob_for_dis_y[i]) > self.ob_for_dis_w[i][1] + 0.4) for i in range(len(self.ob_for_dis_x)))
 
         cand = list(filter(dist_control, cand))
         cand = list(filter(angl_control, cand))
@@ -360,10 +360,10 @@ class Robot:
         # plt.plot([ex], [ey], 'xr')
         # plt.plot([i[0] for i in critical_points], [i[1] for i in critical_points], '.', color='0.9')
         # plt.plot(self.ox, self.oy, '.')
-        plt.plot([i[0] for i in cand], [i[1] for i in cand], '.g')
-        plt.plot([tar[0]], [tar[1]], 'ob')
-        plt.pause(0.001)
-        plt.show(block=False)
+        # plt.plot([i[0] for i in cand], [i[1] for i in cand], '.g')
+        # plt.plot([tar[0]], [tar[1]], 'ob')
+        # plt.pause(0.001)
+        # plt.show(block=False)
 
         path_x, path_y = PathPlanner.get_path(sx, sy, tar[0], tar[1], self.ox, self.oy)
 
@@ -392,6 +392,7 @@ class Robot:
         fake_yaw = np.arctan2(path_y[1] - path_y[0], path_x[1] - path_x[0])
         self.state = Controller3.State(x=sx, y=sy, yaw=fake_yaw, v=2)
         self.target_idx, _ = Controller3.calc_target_index(self.state, self.cx, self.cy)
+        print("random_tar", tar)
 
         return tar 
 
