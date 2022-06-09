@@ -16,9 +16,9 @@ critical_points = pickle.load(open('./pathlet/critical_points', 'rb'))
 ox, oy = [], [] # store solid fixed obstacles and map borders
 conf_ox, conf_oy = [], []
 map_size = [8.08, 4.48] # [m]
-obstacle_prec = 0.05 # [m]
+obstacle_prec = 0.02 # [m]
 
-fixed_obstacle = {
+fixed_obstacles = {
     'B1': [ 7.08, 1.00, 8.08, 1.2],
     'B2': [ 5.78, 2.14 ,6.58 , 2.34], 
     'B3': [ 6.58, 3.48, 6.78, 4.48],
@@ -30,8 +30,8 @@ fixed_obstacle = {
     'B9': [ 0, 3.28, 1, 3.48]
 }
 
-for name in fixed_obstacle:
-    pos = fixed_obstacle[name]
+for name in fixed_obstacles:
+    pos = fixed_obstacles[name]
     for x in np.arange(pos[0], pos[2], obstacle_prec):
         for y in np.arange(pos[1], pos[3], obstacle_prec):
             ox.append(x)
@@ -51,6 +51,7 @@ for y in np.arange(0, map_size[1], obstacle_prec):
     oy.append(y)
     ox.append(map_size[0])
     oy.append(y)
+
 
 ################# Hyperparameters #################
 
@@ -87,6 +88,10 @@ class Robot:
         self.random_tar = None
         self.la_en_b = 24
 
+        self.ob_for_dis_x = [] 
+        self.ob_for_dis_y = [] 
+        self.ob_for_dis_w = [] 
+
         vector_data = obs["vector"]
         sx, sy = vector_data[0][0], vector_data[0][1]
         dynamic_obstacles = [vector_data[5][:2], vector_data[6][:2], vector_data[7][:2], vector_data[8][:2], vector_data[9][:2]]
@@ -98,13 +103,13 @@ class Robot:
                     self.oy.append(y)
                     self.conf_ox.append(x)
                     self.conf_oy.append(y)
-        ob_for_dis_x = []
-        ob_for_dis_y = []
-        ob_for_dis_w = []
-        for name in dynamic_obstacles:
-            if name not in ['B2', 'B5', 'B8']:
-                ob_for_dis_x.append((dynamic_obstacles[name][0] + 
                 
+        for ob in dynamic_obstacles:
+            self.ob_for_dis_x.append((ob[0]))
+            self.ob_for_dis_y.append((ob[1]))
+            self.ob_for_dis_w.append([0.15, 0.15])
+
+            
         PathPlanner.set_planner(self.ox, self.oy)
 
     def update_state(self, obs):
@@ -313,11 +318,12 @@ class Robot:
         angl_control = lambda x: np.arccos(((x[0] - ex) * (sx - ex) + (x[1] - ey) * (sy - ey)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 10
         # cros_control = lambda x: not (np.sign(x[0] - ex) == np.sign(ex - sx) or np.sign(x[1] - ey) == np.sign(ey - sy))
         cros_control = lambda x: math.hypot(x[0] - ex, x[1] - ey) >= math.hypot(x[0] - sx, x[1] - sy)
-        obst_control = lambda x: np.all([abs(x - i) > 0.2 for i in 
+        obst_control = lambda x: all((abs(x[0] - self.ob_for_dis_x[i]) > self.ob_for_dis_w[i][0] + 0.2 or abs(x[1] - self.ob_for_dis_y[i]) > self.ob_for_dis_w[i][1] + 0.2) for i in range(len(self.ob_for_dis_x)))
 
         cand = list(filter(dist_control, cand))
         cand = list(filter(angl_control, cand))
         cand = list(filter(cros_control, cand))
+        cand = list(filter(obst_control, cand))
 
         if self.random_tar not in cand or math.hypot(self.random_tar[0] - sx, self.random_tar[1] - sy) < 0.15:
             return False
@@ -332,10 +338,12 @@ class Robot:
         angl_control = lambda x: np.arccos(((x[0] - ex) * (sx - ex) + (x[1] - ey) * (sy - ey)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 10
         # cros_control = lambda x: not (np.sign(x[0] - ex) == np.sign(ex - sx) or np.sign(x[1] - ey) == np.sign(ey - sy))
         cros_control = lambda x: math.hypot(x[0] - ex, x[1] - ey) >= math.hypot(x[0] - sx, x[1] - sy)
+        obst_control = lambda x: all((abs(x[0] - self.ob_for_dis_x[i]) > self.ob_for_dis_w[i][0] + 0.2 or abs(x[1] - self.ob_for_dis_y[i]) > self.ob_for_dis_w[i][1] + 0.2) for i in range(len(self.ob_for_dis_x)))
 
         cand = list(filter(dist_control, cand))
         cand = list(filter(angl_control, cand))
         cand = list(filter(cros_control, cand))
+        cand = list(filter(obst_control, cand))
 
         # tar = cand[np.random.choice(np.arange(len(cand)))]
         try:
@@ -352,10 +360,10 @@ class Robot:
         # plt.plot([ex], [ey], 'xr')
         # plt.plot([i[0] for i in critical_points], [i[1] for i in critical_points], '.', color='0.9')
         # plt.plot(self.ox, self.oy, '.')
-        # plt.plot([i[0] for i in cand], [i[1] for i in cand], '.g')
-        # plt.plot([tar[0]], [tar[1]], 'ob')
-        # plt.pause(0.001)
-        # plt.show(block=False)
+        plt.plot([i[0] for i in cand], [i[1] for i in cand], '.g')
+        plt.plot([tar[0]], [tar[1]], 'ob')
+        plt.pause(0.001)
+        plt.show(block=False)
 
         path_x, path_y = PathPlanner.get_path(sx, sy, tar[0], tar[1], self.ox, self.oy)
 
