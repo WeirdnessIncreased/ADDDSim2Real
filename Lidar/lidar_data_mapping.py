@@ -56,11 +56,11 @@ def lidar_to_gird_map( ang, dist ):
     occupancy_map = np.zeros( (150, 150), dtype = int )
     for (x, y) in zip(ox, oy):
         if( abs(x / xy_resolution) < 75 and abs(y / xy_resolution) < 75 ):
-            '''
+            
             points = bresenham( ( 75, 75 ), ( (int)(75 + x / xy_resolution), (int)(75 + y / xy_resolution) ) )
             for fa in points:
-                occupancy_map[fa[0]][fa[1]] = -1'''
-            occupancy_map[ (int)(75 + x / xy_resolution), (int)(75 + y / xy_resolution) ] = 1
+                occupancy_map[fa[0]][fa[1]] = -1
+            occupancy_map[ (int)(75 + x / xy_resolution), (int)(75 + y / xy_resolution) ] = 8
             # print( 150 + x / xy_resolution, 150 - y / xy_resolution )
 
     '''
@@ -105,11 +105,14 @@ def get_obstacle():
     # 8.08 / 0.02 = 404
     # 4.48 / 0.02 = 224
     obstacle_map = np.zeros( ( 705, 525 ) , dtype=int )
-    '''
+    obstacle_map[ :, 147:150 ] += 1
+    obstacle_map[ :, 374:378 ] += 1
+    # obstacle_map[ 145:150, : ] += 1
+    # obstacle_map[ 550:555, : ] += 1
     for i in range( 150, 555 ):
         for j in range( 150, 375 ):
             obstacle_map[i][j] = -1
-    '''        
+    
     for pos in obstacles:
         for x in np.arange(pos[0], pos[2]):
             for y in np.arange(pos[1], pos[3]):    
@@ -149,50 +152,51 @@ def numpy_conv(inputs, filter, padding="VALID"):
                 Max_num = conv_sum
                 tx = r
                 ty = c
-                '''
+                
                 # print( "1", tx, ty, Max_num )
-                x_0, y_0 = [], []
-                x_1, y_1 = [], []
-                x_2, y_2 = [], []
-                for i in range( 0, 300 ):
-                    for j in range( 0, 300 ):
-                        if( inputs[i][j] == 0 ):
-                            x_0.append(i)
-                            y_0.append(j)
-                        if( inputs[i][j] == 1 ):
-                            x_1.append(i)
-                            y_1.append(j)
-                        if( inputs[i][j] == -1 ):
-                            x_2.append(i)
-                            y_2.append(j)    
-
-                plt.clf()
-                # plt.plot( x_0, y_0, '.g' )
-                plt.plot( x_1, y_1, '.' )
-                # plt.plot( x_2, y_2, '.r' )
-
-                x_0, y_0 = [], []
-                x_1, y_1 = [], []
-                x_2, y_2 = [], []
-                for i in range( 0, 150 ):
-                    for j in range( 0, 150 ):
-                        if( filter[i][j] == 0 ):
-                            x_0.append(i + r)
-                            y_0.append(j + c)
-                        if( filter[i][j] == 1 ):
-                            x_1.append(i + r)
-                            y_1.append(j + c)
-                        if( filter[i][j] == -1 ):
-                            x_2.append(i + r)
-                            y_2.append(j + c) 
-
-                # plt.plot( x_0, y_0, '.g' )
-                plt.plot( x_1, y_1, '.b' )
-                plt.plot( x_2, y_2, '.r' )
-                plt.pause(0.001)
-                plt.show( block = False )'''
+             
             result[r, c] = conv_sum
-            
+    '''
+    x_0, y_0 = [], []
+    x_1, y_1 = [], []
+    x_2, y_2 = [], []
+    for i in range( 0, 300 ):
+        for j in range( 0, 300 ):
+            if( inputs[i][j] == 0 ):
+                x_0.append(i)
+                y_0.append(j)
+            if( inputs[i][j] == 1 ):
+                x_1.append(i)
+                y_1.append(j)
+            if( inputs[i][j] == -1 ):
+                x_2.append(i)
+                y_2.append(j)    
+
+    plt.clf()
+    # plt.plot( x_0, y_0, '.g' )
+    plt.plot( x_1, y_1, '.' )
+    # plt.plot( x_2, y_2, '.r' )
+
+    x_0, y_0 = [], []
+    x_1, y_1 = [], []
+    x_2, y_2 = [], []
+    for i in range( 0, 150 ):
+        for j in range( 0, 150 ):
+            if( filter[i][j] == 0 ):
+                x_0.append(i + tx)
+                y_0.append(j + ty)
+            if( filter[i][j] == 2 ):
+                x_1.append(i + tx)
+                y_1.append(j + ty)
+            if( filter[i][j] == -1 ):
+                x_2.append(i + tx)
+                y_2.append(j + ty) 
+
+    # plt.plot( x_0, y_0, '.g' )
+    plt.plot( x_1, y_1, '.b' )
+    plt.plot( x_2, y_2, '.r' )
+    plt.pause(0.001)
+    plt.show( block = True )'''
     return tx + 75, ty + 75
 
 ori_obstacle_map = get_obstacle()
