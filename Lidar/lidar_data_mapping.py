@@ -4,6 +4,8 @@ from platform import java_ver
 import matplotlib.pyplot as plt
 import numpy as np
 from cmath import pi
+from cmath import sin
+from cmath import cos
 
 def bresenham( start, end ):
     # en.wikipedia.org/wiki/Bresenham's_line_algorithm
@@ -147,6 +149,7 @@ def numpy_conv(inputs, filter, padding="VALID"):
                 Max_num = conv_sum
                 tx = r
                 ty = c
+                '''
                 # print( "1", tx, ty, Max_num )
                 x_0, y_0 = [], []
                 x_1, y_1 = [], []
@@ -187,7 +190,7 @@ def numpy_conv(inputs, filter, padding="VALID"):
                 plt.plot( x_1, y_1, '.b' )
                 plt.plot( x_2, y_2, '.r' )
                 plt.pause(0.001)
-                plt.show( block = False )
+                plt.show( block = False )'''
             result[r, c] = conv_sum
             
     return tx + 75, ty + 75
@@ -214,7 +217,7 @@ def lidar_mapping( vector_data, laser_data ):
     occupancy_map = lidar_to_gird_map( ang, dist )
     cutted_obstacle_map, x, y = cut_obstacle( vector_data[0], g_obstacle_map )
     tx, ty = numpy_conv( cutted_obstacle_map, occupancy_map )
-    x = ( x + tx ) * 0.02
+    x = ( x + tx ) * 0.02 
     y = ( 224 - ( y + ty ) ) * 0.02
     print( "final", x, y )
     return x, y

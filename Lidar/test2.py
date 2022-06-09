@@ -11,7 +11,7 @@ def check_state( state, info=None ):
     laser_data = np.array(state["laser"])
     vector_data = state["vector"]
     # print("=======================state check====================")
-    # laser scan distances from -135 deg to +135 deg, scan angle resolution is 270/(61-1) 
+    print("self pose: {}, self info: {}, enemy active: {}, enemy pose: {}, enemy_info: {}".format(vector_data[0], vector_data[1], vector_data[2], vector_data[3], vector_data[4]))
     x, y = lidar_data_mapping.lidar_mapping( vector_data, laser_data )
     print( "heihei", vector_data[0][0], vector_data[0][1], x, y )
     m_x.append( vector_data[0][0] - x )
