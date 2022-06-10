@@ -13,8 +13,8 @@ from modules.lidar_data_mapping import update as lidar_update
 
 num_episodes = 20
 num_steps_per_episode = int(5e8)
-# env = CogEnvDecoder(env_name="../mac_confrontation_v2/cog_confrontation_env.app", no_graphics=False, time_scale=1, worker_id=1) 
-env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=2) 
+env = CogEnvDecoder(env_name="../mac_confrontation_v2/cog_confrontation_env.app", no_graphics=False, time_scale=1, worker_id=1) 
+# env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=2) 
 
 robot = None
 goal_prec = 0.5
@@ -83,7 +83,7 @@ for i in range(num_episodes):
         debias_sum_y += obs['vector'][0][1] - y
         debias_steps += 1
 
-    la_fight_tar = np.array([None, None])
+    la_fight_tar = None
     fight_step_control = 0
 
     for j in range(num_steps_per_episode):
@@ -111,13 +111,13 @@ for i in range(num_episodes):
                 debias_sum_y += obs['vector'][0][1] - y
                 debias_steps += 1
         else:
-            if (la_fight_tar == robot.random_tar).all():
+            if la_fight_tar == robot.random_tar:
                 fight_step_control += 1
             else:
                 la_fight_tar = robot.random_tar
                 fight_step_control = 1
             if fight_step_control >= 30:
-                robot.random_tar = np.array([None, None])
+                robot.random_tar = None
             action = robot.get_fight_action(obs)
 
         # Rotation matrix 
