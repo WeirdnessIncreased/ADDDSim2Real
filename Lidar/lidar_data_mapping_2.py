@@ -2,6 +2,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 from cmath import pi
+import cv2
 
 def bresenham( start, end ):
     # en.wikipedia.org/wiki/Bresenham's_line_algorithm
@@ -128,30 +129,12 @@ def cut_obstacle( vector_data, obstacle_map ):
 def numpy_conv(inputs, filter, padding="VALID"):
     inputs = np.array(inputs)
     filter = np.array(filter)
-    H, W = inputs.shape
-    filter_size_x, filter_size_y = filter.shape
-    # print( "size", H, W, filter_size_x, filter_size_y)
-    # default np.floor
-    # filter_center = int(filter_size / 2.0)
-    # filter_center_ceil = int(np.ceil(filter_size / 2.0))
-    result = np.zeros((H - filter_size_x + 1, W - filter_size_y + 1))
-    H, W = inputs.shape
-    Max_num = 0.0
-    tx, ty = 0, 0
-    # print("new size",H,W)
-    for r in range(0, H - filter_size_x + 1):
-        for c in range(0, W - filter_size_y + 1):
-            cur_input = inputs[r : r + filter_size_x, c : c + filter_size_y ]
-            cur_output = cur_input * filter
-            conv_sum = np.sum(cur_output)
-            if( conv_sum > Max_num ):
-                Max_num = conv_sum
-                tx = r
-                ty = c
-                
-                # print( "1", tx, ty, Max_num )
-             
-            result[r, c] = conv_sum
+    res = cv2.filter2D( inputs, -1, filter )
+    axis = np.where(res==np.max(res))
+    
+    tx = int(axis[0])
+    ty = int(axis[1])
+    # print( tx, ty )
     '''
     x_0, y_0 = [], []
     x_1, y_1 = [], []
@@ -193,8 +176,7 @@ def numpy_conv(inputs, filter, padding="VALID"):
     plt.plot( x_2, y_2, '.r' )
     plt.pause(0.001)
     plt.show( block = True )'''
-    print( "axis", tx, ty )
-    return tx + 75, ty + 75
+    return tx, ty
 
 ori_obstacle_map = get_obstacle()
 g_obstacle_map = get_obstacle()
