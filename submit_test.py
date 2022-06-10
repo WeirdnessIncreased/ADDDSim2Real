@@ -3,7 +3,7 @@ import numpy as np
 from cog_agent import Agent
 
 # env = CogEnvDecoder(env_name="mac_confrontation_v2/cog_confrontation_env.app", no_graphics=False, time_scale=1, worker_id=1) 
-env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=2) 
+env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=True, time_scale=1, worker_id=2) 
 
 num_eval_episodes = 10
 
@@ -20,6 +20,7 @@ for i in range(num_eval_episodes):
     info = None
     while not done:
         print(info)
+        print(obs['vector'])
         action = eval_agent.agent_control(obs=obs, done=done, info=info)
         obs, reward, done, info = env.step(action)
 

@@ -322,18 +322,28 @@ class Robot:
         cand = list(filter(dist_control, cand))
         cand = list(filter(angl_control, cand))
         cand = list(filter(cros_control, cand))
-        if len(cand) > 10:
-            up_angl_control = lambda x: np.arccos(((x[0] - sx) * (ex - sx) + (x[1] - sy) * (ey - sy)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 4
-            cand1 = list(filter(up_angl_control, cand))
 
+        cand0 = []
+        if len(cand) > 10:
+            dist2_control = lambda x: np.abs(math.hypot(x[0] - ex, x[1] - ey) - math.hypot(sx - ex, sy - ey)) <= 2
+            cand0 = list(filter(dist2_control, cand))
+
+        cand1 = []
+        if len(cand0) > 10:
+            up_angl_control = lambda x: np.arccos(((x[0] - ex) * (sx - ex) + (x[1] - ey) * (sy - ey)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 4
+            cand1 = list(filter(up_angl_control, cand0))
+
+        cand2 = []
         if len(cand1) > 10:
             se_dis_control = lambda x: math.hypot(x[0] - sx, x[1] - sy) <= 2
             cand2 = list(filter(se_dis_control, cand1))
 
-        if len(cand2) <= 0:
-            cand = cand1
-        else:
+        if len(cand2) > 0:
             cand = cand2
+        elif len(cand1) > 0:
+            cand = cand1
+        elif len(cand0) > 0:
+            cand = cand0
 
         if self.random_tar not in cand or math.hypot(self.random_tar[0] - sx, self.random_tar[1] - sy) < 0.15:
             return False
@@ -353,11 +363,17 @@ class Robot:
         cand = list(filter(angl_control, cand))
         cand = list(filter(cros_control, cand))
 
-        cand1 = []
+        cand0 = []
         if len(cand) > 10:
-            up_angl_control = lambda x: np.arccos(((x[0] - sx) * (ex - sx) + (x[1] - sy) * (ey - sy)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 4
-            cand1 = list(filter(up_angl_control, cand))
+            dist2_control = lambda x: np.abs(math.hypot(x[0] - ex, x[1] - ey) - math.hypot(sx - ex, sy - ey)) <= 2
+            cand0 = list(filter(dist2_control, cand))
 
+        cand1 = []
+        if len(cand0) > 10:
+            up_angl_control = lambda x: np.arccos(((x[0] - ex) * (sx - ex) + (x[1] - ey) * (sy - ey)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 4
+            cand1 = list(filter(up_angl_control, cand0))
+
+        cand2 = []
         if len(cand1) > 10:
             se_dis_control = lambda x: math.hypot(x[0] - sx, x[1] - sy) <= 2
             cand2 = list(filter(se_dis_control, cand1))
@@ -366,6 +382,8 @@ class Robot:
             cand = cand2
         elif len(cand1) > 0:
             cand = cand1
+        elif len(cand0) > 0:
+            cand = cand0
 
         # tar = cand[np.random.choice(np.arange(len(cand)))]
         try:
