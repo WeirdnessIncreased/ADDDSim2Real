@@ -25,7 +25,7 @@ def check_state( state, info=None ):
 env = CogEnvDecoder(env_name="../../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=1) # mac os
 #env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=1)
 num_episodes = 1
-num_steps_per_episode = 1 # max: 1500
+num_steps_per_episode = 1000 # max: 1500
 for i in range(num_episodes):
     #every time call the env.reset() will reset the envinronment
     obs = env.reset()
