@@ -132,8 +132,8 @@ def numpy_conv(inputs, filter, padding="VALID"):
     res = cv2.filter2D( inputs, -1, filter )
     axis = np.where(res==np.max(res))
     
-    tx = int(axis[0])
-    ty = int(axis[1])
+    tx = int(axis[0][0])
+    ty = int(axis[1][0])
     # print( tx, ty )
     '''
     x_0, y_0 = [], []
