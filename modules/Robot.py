@@ -323,7 +323,7 @@ class Robot:
         cand = list(filter(angl_control, cand))
         cand = list(filter(cros_control, cand))
         if len(cand) > 10:
-            up_angl_control = lambda x: np.arccos(((x[0] - ex) * (sx - ex) + (x[1] - ey) * (sy - ey)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 4
+            up_angl_control = lambda x: np.arccos(((x[0] - sx) * (ex - sx) + (x[1] - sy) * (ey - sy)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 4
             cand1 = list(filter(up_angl_control, cand))
 
         if len(cand1) > 10:
@@ -355,10 +355,9 @@ class Robot:
 
         cand1 = []
         if len(cand) > 10:
-            up_angl_control = lambda x: np.arccos(((x[0] - ex) * (sx - ex) + (x[1] - ey) * (sy - ey)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 4
+            up_angl_control = lambda x: np.arccos(((x[0] - sx) * (ex - sx) + (x[1] - sy) * (ey - sy)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 4
             cand1 = list(filter(up_angl_control, cand))
 
-        cand2 = []
         if len(cand1) > 10:
             se_dis_control = lambda x: math.hypot(x[0] - sx, x[1] - sy) <= 2
             cand2 = list(filter(se_dis_control, cand1))
