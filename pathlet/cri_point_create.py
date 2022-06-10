@@ -30,12 +30,12 @@ for i in np.arange(0, map_size[0], map_size[0] / 40):
         critical_points.append([i + width_x / 2, j + width_y / 2])
 
 obst_control = lambda x: all((abs(x[0] - ob_for_dis_x[i]) > ob_for_dis_w[i][0] + 0.4 or abs(x[1] - ob_for_dis_y[i]) > ob_for_dis_w[i][1] + 0.4) for i in range(len(ob_for_dis_x)))
-edge_control = lambda x: x[0] > 0.4 and x[0] < 8.04 and x[1] > 0.4 and x[1] < 4.44
+edge_control = lambda x: x[0] > 0.4 and x[0] < 7.68 and x[1] > 0.4 and x[1] < 4.08
 critical_points = list(filter(obst_control, critical_points))
 critical_points = list(filter(edge_control, critical_points))
 
 critical_points = np.array(critical_points)
-pickle.dump(critical_points, open('./critical_points', 'wb')) 
+pickle.dump(critical_points, open('./pathlet/critical_points', 'wb')) 
 
 
 

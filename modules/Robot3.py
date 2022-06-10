@@ -74,6 +74,7 @@ target_speed = 2  #[m/s]
 
 class Robot:
     def __init__(self, obs):
+        global critical_points
         self.ox = ox[:] # obstacle x for path planning
         self.oy = oy[:] # obstacle y for path planning
         self.conf_ox = conf_ox[:]
@@ -90,7 +91,6 @@ class Robot:
 
         self.ob_for_dis_x = [] 
         self.ob_for_dis_y = [] 
-        self.ob_for_dis_w = [] 
 
         vector_data = obs["vector"]
         sx, sy = vector_data[0][0], vector_data[0][1]
@@ -107,10 +107,12 @@ class Robot:
         for ob in dynamic_obstacles:
             self.ob_for_dis_x.append((ob[0]))
             self.ob_for_dis_y.append((ob[1]))
-            self.ob_for_dis_w.append([0.15, 0.15])
 
             
         PathPlanner.set_planner(self.ox, self.oy)
+
+        obst_control = lambda x: all((abs(x[0] - self.ob_for_dis_x[i]) > 0.15 + 0.4 or abs(x[1] - self.ob_for_dis_y[i]) > 0.15 + 0.4) for i in range(len(self.ob_for_dis_x)))
+        critical_points = list(filter(obst_control, critical_points))
 
     def update_state(self, obs):
         vector_data = obs["vector"]
@@ -318,12 +320,10 @@ class Robot:
         angl_control = lambda x: np.arccos(((x[0] - ex) * (sx - ex) + (x[1] - ey) * (sy - ey)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 10
         # cros_control = lambda x: not (np.sign(x[0] - ex) == np.sign(ex - sx) or np.sign(x[1] - ey) == np.sign(ey - sy))
         cros_control = lambda x: math.hypot(x[0] - ex, x[1] - ey) >= math.hypot(x[0] - sx, x[1] - sy)
-        obst_control = lambda x: all((abs(x[0] - self.ob_for_dis_x[i]) > self.ob_for_dis_w[i][0] + 0.4 or abs(x[1] - self.ob_for_dis_y[i]) > self.ob_for_dis_w[i][1] + 0.4) for i in range(len(self.ob_for_dis_x)))
 
         cand = list(filter(dist_control, cand))
         cand = list(filter(angl_control, cand))
         cand = list(filter(cros_control, cand))
-        cand = list(filter(obst_control, cand))
 
         if self.random_tar not in cand or math.hypot(self.random_tar[0] - sx, self.random_tar[1] - sy) < 0.15:
             return False
@@ -338,12 +338,10 @@ class Robot:
         angl_control = lambda x: np.arccos(((x[0] - ex) * (sx - ex) + (x[1] - ey) * (sy - ey)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 10
         # cros_control = lambda x: not (np.sign(x[0] - ex) == np.sign(ex - sx) or np.sign(x[1] - ey) == np.sign(ey - sy))
         cros_control = lambda x: math.hypot(x[0] - ex, x[1] - ey) >= math.hypot(x[0] - sx, x[1] - sy)
-        obst_control = lambda x: all((abs(x[0] - self.ob_for_dis_x[i]) > self.ob_for_dis_w[i][0] + 0.4 or abs(x[1] - self.ob_for_dis_y[i]) > self.ob_for_dis_w[i][1] + 0.4) for i in range(len(self.ob_for_dis_x)))
 
         cand = list(filter(dist_control, cand))
         cand = list(filter(angl_control, cand))
         cand = list(filter(cros_control, cand))
-        cand = list(filter(obst_control, cand))
 
         # tar = cand[np.random.choice(np.arange(len(cand)))]
         try:
@@ -353,6 +351,7 @@ class Robot:
         # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         # print('cand:',cand)
         # print('tar:', tar)
+        # print('obstacles: ', list(zip(self.ob_for_dis_x, self.ob_for_dis_y)))
         # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
         # plt.clf()

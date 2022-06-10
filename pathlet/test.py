@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 
-critical_points = pickle.load(open('./critical_points', 'rb'))
+critical_points = pickle.load(open('./pathlet/critical_points', 'rb'))
 fixed_obstacles = {
     'B1': [ 7.08, 1.00, 8.08, 1.2],
     'B2': [ 5.78, 2.14 ,6.58 , 2.34], 
@@ -39,11 +39,19 @@ for i in np.arange(0, 0.04, 0.02):
     for j in np.arange(0, 4.50, 0.02):
         plt.plot(i, j, '.r')
         plt.plot(i + 8.08, j, '.r')
-obst_control = lambda x: all((abs(x[0] - ob_for_dis_x[i]) > ob_for_dis_w[i][0] + 0.2 or abs(x[1] - ob_for_dis_y[i]) > ob_for_dis_w[i][1] + 0.2) for i in range(len(ob_for_dis_x)))
+
+ob = [(5.28, 1.32), (7.41, 1.93), (0.36, 4.13), (5.67, 3.05), (0.93, 0.3)]
+
+for coor in ob:
+    for i in np.arange(coor[0] - 0.15, coor[0] + 0.15, 0.02):
+        for j in np.arange(coor[1] - 0.15, coor[1] + 0.15, 0.02):
+            plt.plot(i, j, '.r')
+
+obst_control = lambda x: all((abs(x[0] - ob[i][0]) > 0.15 + 0.4 or abs(x[1] - ob[i][1]) > 0.15 + 0.4) for i in range(len(ob)))
 edge_control = lambda x: x[0] > 0.3 and x[0] < 8.05 and x[1] > 0.3 and x[1] < 4.45
 
 print(len(critical_points))
-# critical_points = list(filter(obst_control, critical_points))
+critical_points = list(filter(obst_control, critical_points))
 # critical_points = list(filter(edge_control, critical_points))
 print(len(critical_points))
 
