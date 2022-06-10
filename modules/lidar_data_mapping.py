@@ -51,7 +51,6 @@ def lidar_to_gird_map( ang, dist ):
     oy = np.cos(ang) * dist
     '''
     for i in range( 60 ):
-        print( 75 + ox[i] / xy_resolution, 75 + oy[i] / xy_resolution, ang[i], dist[i] )
     '''
     occupancy_map = np.zeros( (150, 150), dtype = int )
     for (x, y) in zip(ox, oy):
@@ -61,18 +60,14 @@ def lidar_to_gird_map( ang, dist ):
             for fa in points:
                 occupancy_map[fa[0]][fa[1]] = -1
             occupancy_map[ (int)(75 + x / xy_resolution), (int)(75 + y / xy_resolution) ] = 8
-            # print( 150 + x / xy_resolution, 150 - y / xy_resolution )
 
     '''
     for i in range( 0 , 299 ):
         for j in range( 0, 299 ):
             if( occupancy_map[i][j] == 1 ):
-                print( i, j )
     
     for i in range( 149, -1, -1 ):
         for j in range( 0, 150 ):
-            print( occupancy_map[j][i], end = '' )
-        print()
     '''
     return occupancy_map
 
@@ -121,12 +116,9 @@ def get_obstacle():
     return obstacle_map
 
 def cut_obstacle( vector_data, obstacle_map ):
-    # print(obstacle_map)
     x = int(vector_data[0] / 0.02) + 150
     y = int(vector_data[1] / 0.02) + 150
-    # print( "x,y ", x - 150 - 150, 224 + 150 - y - 150 )
     obstacle_map = obstacle_map[ x - 150: x + 150, y - 150: y + 150 ]
-    # print( size_x_left - size_x_right, size_y_down - size_y_up )
     return obstacle_map, x - 150 - 150, 224 - y
 
 def numpy_conv(inputs, filter, padding="VALID"):
@@ -134,7 +126,6 @@ def numpy_conv(inputs, filter, padding="VALID"):
     filter = np.array(filter)
     H, W = inputs.shape
     filter_size_x, filter_size_y = filter.shape
-    # print( "size", H, W, filter_size_x, filter_size_y)
     # default np.floor
     # filter_center = int(filter_size / 2.0)
     # filter_center_ceil = int(np.ceil(filter_size / 2.0))
@@ -142,7 +133,6 @@ def numpy_conv(inputs, filter, padding="VALID"):
     H, W = inputs.shape
     Max_num = 0.0
     tx, ty = 0, 0
-    # print("new size",H,W)
     for r in range(0, H - filter_size_x + 1):
         for c in range(0, W - filter_size_y + 1):
             cur_input = inputs[r : r + filter_size_x, c : c + filter_size_y ]
@@ -153,7 +143,6 @@ def numpy_conv(inputs, filter, padding="VALID"):
                 tx = r
                 ty = c
                 
-                # print( "1", tx, ty, Max_num )
              
             result[r, c] = conv_sum
     '''
@@ -203,7 +192,6 @@ ori_obstacle_map = get_obstacle()
 g_obstacle_map = get_obstacle()
 
 def update(obstacle):
-    # print( obstacle )
     global g_obstacle_map
     g_obstacle_map = ori_obstacle_map
     for( xx, yy ) in obstacle:
@@ -214,7 +202,6 @@ def update(obstacle):
 def lidar_mapping( vector_data, laser_data ):
     ang, dist = [], []
     for i in range( 0, 61 ):
-        #print( (float)( -vector_data[0][2] + ( 135 * ( i - 30 ) / 30 * pi / 180) )  )
         ang.append((float)( pi * 0.5 - vector_data[0][2] + ( 135 * ( i - 30 ) / 30 * pi / 180) ))
         dist.append( (float)(laser_data[i]) )
     
@@ -223,5 +210,4 @@ def lidar_mapping( vector_data, laser_data ):
     tx, ty = numpy_conv( cutted_obstacle_map, occupancy_map )
     x = ( x + tx ) * 0.02 
     y = ( 224 - ( y + ty ) ) * 0.02
-    # print( "final", x, y )
     return x, y

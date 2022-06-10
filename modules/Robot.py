@@ -1,5 +1,5 @@
 import math
-from modules import Controller3, PathPlanner
+from modules import Controller, PathPlanner
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
@@ -182,8 +182,8 @@ class Robot:
             plt.show()
 
         fake_yaw = np.arctan2(path_y[1] - path_y[0], path_x[1] - path_x[0])
-        self.state = Controller3.State(x=sx, y=sy, yaw=fake_yaw, v=2.0)
-        self.target_idx, _ = Controller3.calc_target_index(self.state, self.cx, self.cy)
+        self.state = Controller.State(x=sx, y=sy, yaw=fake_yaw, v=2.0)
+        self.target_idx, _ = Controller.calc_target_index(self.state, self.cx, self.cy)
 
         if show_animation:
             self.simulation(obs, self.cx, self.cy, self.cyaw, ck, fake_yaw)
@@ -191,14 +191,14 @@ class Robot:
         # print(f"=== Updated path for goal [{tar + 1}]")
 
     def get_activation_action(self, sx, sy):
-        ai = Controller3.pid_control(target_speed, self.state.v)
-        di, self.target_idx = Controller3.stanley_control(self.state, self.cx, self.cy, self.cyaw, self.target_idx)
+        ai = Controller.pid_control(target_speed, self.state.v)
+        di, self.target_idx = Controller.stanley_control(self.state, self.cx, self.cy, self.cyaw, self.target_idx)
 
         last_x, last_y = self.state.x, self.state.y
 
         self.state.update(ai, di, sx, sy)
 
-        print('==', self.state.v)
+        # print('==', self.state.v)
 
         self.tar_v_x = self.state.v * np.cos(self.state.yaw)
         self.tar_v_y = self.state.v * np.sin(self.state.yaw)
@@ -236,80 +236,76 @@ class Robot:
         cu_h, cu_b = obs['vector'][1]
         en_h, en_b = obs['vector'][4]
 
-        if en_b == 0:
-            print('嘿嘿嘿你没子弹了吧～')
-            action = [0, 0, 100, 0]
+        action = [0, 0, 0, 0]
+
+        # shoot or not
+        ob_to_line_prec = 0.03
+        ob = list(zip(self.conf_ox, self.conf_oy))
+        a, b = np.linalg.solve([[cu_x, 1], [en_x, 1]], [[cu_y], [en_y]]) # y = ax + b
+        dist_control = lambda x: np.abs(a * x[0] - x[1] + b) / np.sqrt(a ** 2 + 1) <= ob_to_line_prec
+        cros_control = lambda x: np.sign(x[0] - en_x) == np.sign(cu_x - x[0]) and np.sign(en_y - x[1]) == np.sign(x[1] - cu_y)
+        # plt.clf()
+        # plt.plot([cu_x], [cu_y], 'xb')
+        # plt.plot([en_x], [en_y], 'xr')
+        # plt.plot(self.ox, self.oy, '.', 'grey')
+        # plt.plot([i[0] for i in ob], [i[1] for i in ob], '.r')
+        # plt.pause(0.001)
+        # plt.show(block=True)
+        ob = list(filter(dist_control, ob))
+        # plt.clf()
+        # plt.plot([cu_x], [cu_y], 'xb')
+        # plt.plot([en_x], [en_y], 'xr')
+        # plt.plot(self.ox, self.oy, '.', 'grey')
+        # plt.plot([i[0] for i in ob], [i[1] for i in ob], '.r')
+        # plt.pause(0.001)
+        # plt.show(block=True)
+        ob = list(filter(cros_control, ob))
+        # plt.clf()
+        # plt.plot([cu_x], [cu_y], 'xb')
+        # plt.plot([en_x], [en_y], 'xr')
+        # plt.plot(self.ox, self.oy, '.', 'grey')
+        # plt.plot([i[0] for i in ob], [i[1] for i in ob], '.r')
+        # plt.pause(0.001)
+        # plt.show(block=True)
+
+        if len(ob) <= 0 and cu_b > 0:
+            action[3] = 1
         else:
-            action = [0, 0, 0, 0]
+            action[3] = 0
 
-            # shoot or not
-            ob_to_line_prec = 0.03
-            ob = list(zip(self.conf_ox, self.conf_oy))
-            a, b = np.linalg.solve([[cu_x, 1], [en_x, 1]], [[cu_y], [en_y]]) # y = ax + b
-            dist_control = lambda x: np.abs(a * x[0] - x[1] + b) / np.sqrt(a ** 2 + 1) <= ob_to_line_prec
-            cros_control = lambda x: np.sign(x[0] - en_x) == np.sign(cu_x - x[0]) and np.sign(en_y - x[1]) == np.sign(x[1] - cu_y)
-            # plt.clf()
-            # plt.plot([cu_x], [cu_y], 'xb')
-            # plt.plot([en_x], [en_y], 'xr')
-            # plt.plot(self.ox, self.oy, '.', 'grey')
-            # plt.plot([i[0] for i in ob], [i[1] for i in ob], '.r')
-            # plt.pause(0.001)
-            # plt.show(block=True)
-            ob = list(filter(dist_control, ob))
-            # plt.clf()
-            # plt.plot([cu_x], [cu_y], 'xb')
-            # plt.plot([en_x], [en_y], 'xr')
-            # plt.plot(self.ox, self.oy, '.', 'grey')
-            # plt.plot([i[0] for i in ob], [i[1] for i in ob], '.r')
-            # plt.pause(0.001)
-            # plt.show(block=True)
-            ob = list(filter(cros_control, ob))
-            # plt.clf()
-            # plt.plot([cu_x], [cu_y], 'xb')
-            # plt.plot([en_x], [en_y], 'xr')
-            # plt.plot(self.ox, self.oy, '.', 'grey')
-            # plt.plot([i[0] for i in ob], [i[1] for i in ob], '.r')
-            # plt.pause(0.001)
-            # plt.show(block=True)
+        
 
-            if len(ob) <= 0 and cu_b > 0:
-                action[3] = 1
-            else:
-                action[3] = 0
+        # random walk
+        if (self.random_tar == None).any() or math.hypot(self.random_tar[0] - cu_x, self.random_tar[1] - cu_y) < 0.5:
+        # if self.check_tar(cu_x, cu_y, en_x, en_y) == False:
+            self.random_tar = self.get_fight_route(cu_x, cu_y, en_x, en_y)
+        action[0], action[1] = self.get_fight_velocity(cu_x, cu_y)
+        # action[0] = np.random.rand()
+        # action[1] = np.random.rand()
 
-            
+        future_x, future_y = cu_x - action[0] * dt, cu_y - action[1] * dt
 
-            # random walk
-            if (self.random_tar == None).all() or math.hypot(self.random_tar[0] - cu_x, self.random_tar[1] - cu_y) < 0.5:
-            # if self.check_tar(cu_x, cu_y, en_x, en_y) == False:
-                self.random_tar = self.get_fight_route(cu_x, cu_y, en_x, en_y)
-            action[0], action[1] = self.get_fight_velocity(cu_x, cu_y)
-            # action[0] = np.random.rand()
-            # action[1] = np.random.rand()
+        # rotation
+        # tar = np.arctan2(en_y - cu_y, en_x - cu_x)
+        # tar = np.arctan((en_y - cu_y) / (en_x - cu_x))
+        tar = np.arctan((en_y - future_y) / (en_x - future_x))
+        if np.tan(tar) * (en_y - cu_y) < 0:
+            tar += math.pi
+        if abs(tar - cu_w) > math.pi:
+            action[2] = - (tar - cu_w) / dt * 1.2
+        else:
+            action[2] = + (tar - cu_w) / dt * 1.2
 
-            future_x, future_y = cu_x - action[0] * dt, cu_y - action[1] * dt
+        if abs(tar - cu_w) > math.pi / 12 or math.hypot(cu_x - en_x, cu_y - en_y) > 3:
+            action[3] = 0
 
-            # rotation
-            # tar = np.arctan2(en_y - cu_y, en_x - cu_x)
-            # tar = np.arctan((en_y - cu_y) / (en_x - cu_x))
-            tar = np.arctan((en_y - future_y) / (en_x - future_x))
-            if np.tan(tar) * (en_y - cu_y) < 0:
-                tar += math.pi
-            if abs(tar - cu_w) > math.pi:
-                action[2] = - (tar - cu_w) / dt * 1.2
-            else:
-                action[2] = + (tar - cu_w) / dt * 1.2
+        # if action[3]:
+        #     action[0], action[1] = 0, 0
 
-            if abs(tar - cu_w) > math.pi / 12 or math.hypot(cu_x - en_x, cu_y - en_y) > 3:
-                action[3] = 0
-
-            # if action[3]:
-            #     action[0], action[1] = 0, 0
-
-            # if action[1] > 0.1:
-            #     action[2] -= +1
-            # elif action[1] < 0.1:
-            #     action[2] += -1
+        # if action[1] > 0.1:
+        #     action[2] -= +1
+        # elif action[1] < 0.1:
+        #     action[2] += -1
 
         return action
 
@@ -389,15 +385,15 @@ class Robot:
         self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(path_x, path_y, ds=0.10)
 
         fake_yaw = np.arctan2(path_y[1] - path_y[0], path_x[1] - path_x[0])
-        self.state = Controller3.State(x=sx, y=sy, yaw=fake_yaw, v=2)
-        self.target_idx, _ = Controller3.calc_target_index(self.state, self.cx, self.cy)
-        print("random_tar", tar)
+        self.state = Controller.State(x=sx, y=sy, yaw=fake_yaw, v=2)
+        self.target_idx, _ = Controller.calc_target_index(self.state, self.cx, self.cy)
+        # print("random_tar", tar)
 
         return tar 
 
     def get_fight_velocity(self, sx, sy):
-        ai = Controller3.pid_control(target_speed, self.state.v)
-        di, self.target_idx = Controller3.stanley_control(self.state, self.cx, self.cy, self.cyaw, self.target_idx)
+        ai = Controller.pid_control(target_speed, self.state.v)
+        di, self.target_idx = Controller.stanley_control(self.state, self.cx, self.cy, self.cyaw, self.target_idx)
 
         last_x, last_y = self.state.x, self.state.y
 
@@ -411,7 +407,7 @@ class Robot:
     def simulation(self, obs, cx, cy, cyaw, ck, yaw):
         vector_data = obs["vector"]
         sx, sy = vector_data[0][0], vector_data[0][1]
-        state = Controller3.State(x=sx, y=sy, yaw=yaw, v=0.0)
+        state = Controller.State(x=sx, y=sy, yaw=yaw, v=0.0)
         max_simulation_time = 100000.0
         last_idx = len(cx) - 1
 
@@ -421,17 +417,17 @@ class Robot:
         yaw = [state.yaw]
         v = [state.v]
         t = [0.0]
-        target_idx, _ = Controller3.calc_target_index(state, cx, cy)
+        target_idx, _ = Controller.calc_target_index(state, cx, cy)
 
         while max_simulation_time >= time and last_idx > target_idx:
-            ai = Controller3.pid_control(target_speed, state.v)
-            di, target_idx = Controller3.stanley_control(state, cx, cy, cyaw, target_idx)
+            ai = Controller.pid_control(target_speed, state.v)
+            di, target_idx = Controller.stanley_control(state, cx, cy, cyaw, target_idx)
             di = np.clip(di, -max_steer, max_steer)
 
             state.x += state.v * np.cos(state.yaw) * dt
             state.y += state.v * np.sin(state.yaw) * dt
             state.yaw += state.v / L * np.tan(di) * dt
-            state.yaw = Controller3.normalize_angle(state.yaw)
+            state.yaw = Controller.normalize_angle(state.yaw)
             state.v += ai * dt
             time += dt
 
