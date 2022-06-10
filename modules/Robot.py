@@ -86,7 +86,7 @@ class Robot:
         self.state = None
         self.tar_v_x = None
         self.tar_v_y = None
-        self.random_tar = np.array([None, None])
+        self.random_tar = None
         self.la_en_b = 24
 
         self.ob_for_dis_x = [] 
@@ -276,7 +276,7 @@ class Robot:
         
 
         # random walk
-        if (self.random_tar == None).any() or math.hypot(self.random_tar[0] - cu_x, self.random_tar[1] - cu_y) < 0.5:
+        if self.random_tar == None or math.hypot(self.random_tar[0] - cu_x, self.random_tar[1] - cu_y) < 0.5:
         # if self.check_tar(cu_x, cu_y, en_x, en_y) == False:
             self.random_tar = self.get_fight_route(cu_x, cu_y, en_x, en_y)
         action[0], action[1] = self.get_fight_velocity(cu_x, cu_y)

@@ -24,7 +24,7 @@ debias_steps = 0
 
 last_activation_tar = -1
 
-la_fight_tar = np.array([None, None])
+la_fight_tar = None
 fight_step_control = 0
 
 class Agent:
@@ -60,7 +60,7 @@ class Agent:
         debias_sum_y = 0
         debias_steps = 0
         last_activation_tar = -1
-        la_fight_tar = np.array([None, None])
+        la_fight_tar = None
         fight_step_control = 0
         activation_step_control = 0
 
@@ -121,13 +121,13 @@ class Agent:
                 debias_sum_y += obs['vector'][0][1] - y
                 debias_steps += 1
         else:
-            if (la_fight_tar == self.robot.random_tar).all():
+            if la_fight_tar == self.robot.random_tar:
                 fight_step_control += 1
             else:
                 la_fight_tar = self.robot.random_tar
                 fight_step_control = 1
             if fight_step_control >= 30:
-                self.robot.random_tar = np.array([None, None])
+                self.robot.random_tar = None
                 fight_step_control = 0
             action = self.robot.get_fight_action(obs)
 
