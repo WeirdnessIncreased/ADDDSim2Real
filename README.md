@@ -1,19 +1,6 @@
 # ADDDSim2Real
 Aduiduidui's repo for Sim2Real competition.
 
-啦啦啦！
+This is the `bailan` result of the so-called `ADuiDuiDui` team's result.
 
-B1 = [ 7.08, 1.00, 8.08, 1.2 ]
-B2 = [ 5.78, 2.14 ,6.58 , 2.34 ]
-B3 = [ 6.58, 3.48, 6.78, 4.48 ]
-B4 = [ 3.54, 0.935, 4.45 , 1.135 ]
-B5 = [ 3.864, 2.064, 4.216, 2.416 ]
-B6 = [ 3.54, 3.345, 4.45 , 3.545 ]
-B7 = [ 1.5, 0, 1.7, 1 ]
-B8 = [ 1.5, 2.14, 2.3, 2.34 ]
-B9 = [ 0, 3.28, 1, 3.48 ]
-
-Map_size = [ 0, 0, 8.08, 4.48 ]
-
-
-耶耶耶！
+No additional package is needed to run the agent for a properly built `sim2real` environment.
