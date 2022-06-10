@@ -90,7 +90,9 @@ class Robot:
         self.la_en_b = 24
 
         self.ob_for_dis_x = [] 
-        self.ob_for_dis_y = [] 
+        self.ob_for_dis_y = []
+
+        self.flag = True
 
         vector_data = obs["vector"]
         sx, sy = vector_data[0][0], vector_data[0][1]
@@ -276,7 +278,7 @@ class Robot:
         
 
         # random walk
-        if self.random_tar == None or math.hypot(self.random_tar[0] - cu_x, self.random_tar[1] - cu_y) < 0.5:
+        if self.random_tar == None or math.hypot(self.random_tar[0] - cu_x, self.random_tar[1] - cu_y) < 0.5 or self.flag == False:
         # if self.check_tar(cu_x, cu_y, en_x, en_y) == False:
             self.random_tar = self.get_fight_route(cu_x, cu_y, en_x, en_y)
         action[0], action[1] = self.get_fight_velocity(cu_x, cu_y)
@@ -320,6 +322,18 @@ class Robot:
         cand = list(filter(dist_control, cand))
         cand = list(filter(angl_control, cand))
         cand = list(filter(cros_control, cand))
+        if len(cand) > 10:
+            up_angl_control = lambda x: np.arccos(((x[0] - ex) * (sx - ex) + (x[1] - ey) * (sy - ey)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 4
+            cand1 = list(filter(up_angl_control, cand))
+
+        if len(cand1) > 10:
+            se_dis_control = lambda x: math.hypot(x[0] - sx, x[1] - sy) <= 2
+            cand2 = list(filter(se_dis_control, cand1))
+
+        if len(cand2) <= 0:
+            cand = cand1
+        else:
+            cand = cand2
 
         if self.random_tar not in cand or math.hypot(self.random_tar[0] - sx, self.random_tar[1] - sy) < 0.15:
             return False
@@ -339,10 +353,27 @@ class Robot:
         cand = list(filter(angl_control, cand))
         cand = list(filter(cros_control, cand))
 
+        cand1 = []
+        if len(cand) > 10:
+            up_angl_control = lambda x: np.arccos(((x[0] - ex) * (sx - ex) + (x[1] - ey) * (sy - ey)) / math.hypot(x[0] - ex, x[1] - ey) / math.hypot(sx - ex, sy - ey)) > math.pi / 4
+            cand1 = list(filter(up_angl_control, cand))
+
+        cand2 = []
+        if len(cand1) > 10:
+            se_dis_control = lambda x: math.hypot(x[0] - sx, x[1] - sy) <= 2
+            cand2 = list(filter(se_dis_control, cand1))
+
+        if len(cand2) > 0:
+            cand = cand2
+        elif len(cand1) > 0:
+            cand = cand1
+
         # tar = cand[np.random.choice(np.arange(len(cand)))]
         try:
             tar = cand[np.random.choice(np.arange(len(cand)))]
+            self.flag = True
         except:
+            self.flag = False
             tar = critical_points[np.random.choice(np.arange(len(critical_points)))] 
         # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         # print('cand:',cand)
@@ -350,15 +381,15 @@ class Robot:
         # print('obstacles: ', list(zip(self.ob_for_dis_x, self.ob_for_dis_y)))
         # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
-        # plt.clf()
-        # plt.plot([sx], [sy], 'xb')
-        # plt.plot([ex], [ey], 'xr')
-        # plt.plot([i[0] for i in critical_points], [i[1] for i in critical_points], '.', color='0.9')
-        # plt.plot(self.ox, self.oy, '.')
-        # plt.plot([i[0] for i in cand], [i[1] for i in cand], '.g')
-        # plt.plot([tar[0]], [tar[1]], 'ob')
-        # plt.pause(0.001)
-        # plt.show(block=False)
+        plt.clf()
+        plt.plot([sx], [sy], 'xb')
+        plt.plot([ex], [ey], 'xr')
+        plt.plot([i[0] for i in critical_points], [i[1] for i in critical_points], '.', color='0.9')
+        plt.plot(self.ox, self.oy, '.')
+        plt.plot([i[0] for i in cand], [i[1] for i in cand], '.g')
+        plt.plot([tar[0]], [tar[1]], 'ob')
+        plt.pause(0.001)
+        plt.show(block=False)
 
         path_x, path_y = PathPlanner.get_path(sx, sy, tar[0], tar[1], self.ox, self.oy)
 
