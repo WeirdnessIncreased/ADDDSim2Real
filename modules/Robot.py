@@ -163,6 +163,9 @@ class Robot:
         if origin_end_x not in path_x:
             path_x = path_x + [origin_end_x]
             path_y = path_y + [origin_end_y]
+        if sx not in path_x or sy not in path_y:
+            path_x = [sx] + path_x
+            path_y = [sy] + path_y
 
         path_x += [gx]
         path_y += [gy]
