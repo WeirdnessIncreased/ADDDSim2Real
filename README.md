@@ -39,3 +39,9 @@ requirment list没有进行修改，之前的list还可以继续用
 3. 测试后，将 EP 机器人的数据和比赛录像反馈给参赛队伍；
 
 4. 参赛队伍根据反馈数据和比赛录像进行算法优化。
+
+## References
+
+#### Open Source Code
+
+https://github.com/ArianJM/rapidly-exploring-random-trees
