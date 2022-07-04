@@ -1,6 +1,6 @@
 from Cogenvdecoder.CogEnvDecoder import CogEnvDecoder
 import numpy as np
-from cog_agent import Agent
+from agent import Agent
 
 # env = CogEnvDecoder(env_name="mac_confrontation_v2/cog_confrontation_env.app", no_graphics=False, time_scale=1, worker_id=1) 
 # env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=2) 
