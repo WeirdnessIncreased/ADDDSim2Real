@@ -18,14 +18,11 @@ score_analy = []
 for i in range(num_eval_episodes):
 
     obs = env.reset()
-    # if i <= 4: continue
     done = False
     info = None
-
     while not done:
         print(info)
         print(obs['vector'])
-        # if info != None and info[1][3] == 5: break # attention
         action = eval_agent.agent_control(obs=obs, done=done, info=info)
         obs, reward, done, info = env.step(action)
 
@@ -36,9 +33,7 @@ for i in range(num_eval_episodes):
     attack_damage = info[1][2]
     attack_damage_analy.append(attack_damage)
     score = info[1][0]
-    if score <= -1000:
-        print('found error at step', i)
-        break
+    if score <= -1000: break
     score_analy.append(score)
     print('===', np.mean(score))
 

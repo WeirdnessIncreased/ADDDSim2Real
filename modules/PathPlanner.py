@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 
 show_animation = False
 
-robot_radius = 0.18
+robot_radius = 0.20
 
 a_star = None
 
@@ -245,11 +245,11 @@ class AStarPlanner:
 
 def set_conf_robot_radius():
     global robot_radius
-    robot_radius = 0.22
+    robot_radius = 0.20
 
 def set_planner(ox, oy):
     global a_star
-    grid_size = 0.20
+    grid_size = 0.10
     goal_prec = 0.50 / grid_size
     a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
 
@@ -263,7 +263,7 @@ def get_path(sx, sy, gx, gy, ox, oy):
         plt.grid(True)
         plt.axis("equal")
 
-    grid_size = 0.20
+    grid_size = 0.10
     goal_prec = 0.50 / grid_size
     global a_star
     rx, ry = a_star.planning(sx, sy, gx, gy, goal_prec)
