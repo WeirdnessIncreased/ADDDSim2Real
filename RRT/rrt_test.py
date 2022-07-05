@@ -8,7 +8,7 @@ MIN_NUM_VERT = 20 # Minimum number of vertex in the graph
 MAX_NUM_VERT = 1500 # Maximum number of vertex in the graph
 STEP_DIS = 20 # Maximum distance between two vertex
 SEED = None # For random numbers
-MAP_IMG = "./lab-map-scaled.png"
+MAP_IMG = "./1.png"
 
 def find_Nearest_Point(points, point):
     best = (sys.maxsize, sys.maxsize, sys.maxsize)
