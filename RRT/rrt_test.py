@@ -9,6 +9,7 @@ MAX_NUM_VERT = 1500 # Maximum number of vertex in the graph
 STEP_DIS = 20 # Maximum distance between two vertex
 SEED = None # For random numbers
 MAP_IMG = "./1.png"
+MAP_IMG1 = './lab-map-scaled.png'
 
 def find_Nearest_Point(points, point):
     best = (sys.maxsize, sys.maxsize, sys.maxsize)
@@ -50,7 +51,7 @@ def connect_Points(a, b, img):
                 break
             if( coordY >= len(img) or coordX >= len(img[0]) ):
                 break
-            if( img[int(coordY)][int(coordX)][0] * 255 < 255 ):
+            if( img[int(coordY)][int(coordX)] * 255 < 255 ):
                 blocked = True
             if blocked:
                 break
@@ -70,8 +71,8 @@ def searchPath(graph, point, path):
         if point == i[0]:
             p = i
 
-        if p[0] == graph[-1][0]:
-            return path
+    if p[0] == graph[-1][0]:
+        return path
 
     for link in p[1]:
         path.append(link)
@@ -133,7 +134,7 @@ def rapidlyExploringRandomTree(ax, img, start, goal, seed=None):
             else:
                 point = [ random.randint(0, len(img[0]) - 1), random.randint(0, len(img) - 1) ]
 
-            if(img[point[1]][point[0]][0] * 255 == 255):
+            if(img[point[1]][point[0]] * 255 == 255):
                 occupied = False
 
         occupied = True
@@ -181,6 +182,8 @@ def rapidlyExploringRandomTree(ax, img, start, goal, seed=None):
 
 def main():
     img = imread(MAP_IMG)
+    img1 = imread(MAP_IMG1)
+    print( len(img), len(img1) )
     start = [ 100 , 100 ]
     goal = [ 200, 200 ]
     fig = ppl.gcf()
@@ -191,10 +194,16 @@ def main():
     ppl.draw()
     print ('Map is', len(img[0]), 'x', len(img))
     path = rapidlyExploringRandomTree(ax, img, start, goal, seed=SEED)
-    print( path )
-
-
-
+    # print( path )
+    '''
+    x, y = [], []
+    ax.imshow(img, cmap=cm.Greys_r)
+    for i in path:
+        x.append( i[0] )
+        y.append( i[1] )
+    ppl.plot( x, y, '.b' )
+    ppl.show()
+    '''
 
 
 
