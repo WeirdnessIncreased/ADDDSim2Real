@@ -4,7 +4,7 @@ import numpy as np
 from cmath import pi
 import lidar_data_mapping as re
 
-SETTED_ERROR_X = 0.3
+SETTED_ERROR_X = 0.5
 SETTED_ERROR_Y = 0.1
 status_x = 0
 status_y = 0
