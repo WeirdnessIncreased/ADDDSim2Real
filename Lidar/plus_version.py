@@ -26,6 +26,7 @@ def check_x( system_axis, temp_x, temp_y, occupancy_map ):
     dis_error = 999999
     if( left_x != -1 ):
         x_pos, y_pos = temp_x / 0.02, temp_y / 0.02
+        x_pos, y_pos = (int)(x_pos), (int)(y_pos)
         for y in range( y_pos - 16, y_pos + 16 ):
             if( y >= 0 and y <= 224 ):
                 for i in range(  x_pos, x_pos - left_dis - 30, -1 ):
@@ -56,11 +57,52 @@ def check_x( system_axis, temp_x, temp_y, occupancy_map ):
     
 
 
-def check_y( temp_x, temp_y, occupancy_map ):
+def check_y( system_axis, temp_x, temp_y, occupancy_map ):
     global status_y
     global ERROR_Y
+    sys_y = system_axis
+    
     obstacle_map = re.get_obstacle()
-
+    top_x, bottom_x = -1, -1
+    
+    for i in range( 0, 75 ):
+        if( occupancy_map[75][i] == 8 ):
+            top_x = i
+            break
+    # print( "top:", top_x )
+    top_dis = 75 - top_x
+    dis_error = 999999
+    if( top_x != -1 ):
+        x_pos, y_pos = temp_x / 0.02, temp_y / 0.02
+        x_pos, y_pos = (int)(x_pos), (int)(y_pos)
+        for x in range( x_pos - 16, x_pos + 16 ):
+            if( x >= 0 and x <= 404 ):
+                for i in range(  y_pos, y_pos - top_dis - 30, -1 ):
+                    if( ( i >= 0 and i <= 224 ) and obstacle_map[ x + 150 ][ i + 150 ] == 1 ):
+                        if( abs( y_pos - i - top_dis ) < dis_error ):
+                            dis_error = abs( x_pos - i - top_dis )
+                            real_y_pos = i + top_dis
+        status_y = 1
+        ERROR_Y = real_y_pos * 0.02 - sys_y
+    
+    for i in range( 76, 150 ):
+        if( occupancy_map[75][i] == 8 ):
+            bottom_x = i
+            break
+    bottom_dis = bottom_x - 75
+    dis_error = 999999
+    if( bottom_x != -1 ):
+        x_pos, y_pos = (int)( temp_x / 0.02 ), (int)( temp_y / 0.02 )
+        for x in range( x_pos - 16, x_pos + 16 ):
+            if( x >= 0 and x <= 404 ):
+                for i in range(  y_pos, y_pos + bottom_dis + 30 ):
+                    if( ( i >= 0 and i <= 224 ) and obstacle_map[ x + 150 ][ i + 150 ] == 1 ):
+                        if( abs( i - y_pos - bottom_dis ) < dis_error ):
+                            dis_error = abs( i - y_pos - bottom_dis )
+                            real_y_pos = i - bottom_dis
+        status_y = 1
+        ERROR_Y = real_y_pos * 0.02 - sys_y
+    
 
 def test_function( vector_data, laser_data ):
 
@@ -86,7 +128,7 @@ def test_function( vector_data, laser_data ):
                 x = temp_x
 
         if( status_y == 0 ):
-            if( check_y( temp_x, temp_y, occupancy_map ) ):
+            if( check_y( vector_data[0][1], temp_x, temp_y, occupancy_map ) ):
                 y = vector_data[0][1] + ERROR_Y
             else:
                 y = temp_y

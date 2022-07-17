@@ -15,10 +15,10 @@ def check_state( state, info=None ):
     q, w = vector_data[0][0], vector_data[0][1]
     x, y = lidar_data_mapping_2.test_function( vector_data, laser_data )
     # print( "heihei", vector_data[0][0], vector_data[0][1], x, y )
-    if( abs(vector_data[0][0] - x) > 0.6 or abs(vector_data[0][1] - y) > 0.6 ):
-        pass
-    else:
-        print( "diff:", q - x )
+    # if( abs(vector_data[0][0] - x) > 0.6 or abs(vector_data[0][1] - y) > 0.6 ):
+    #     pass
+    # else:
+    print( "diff:", q - x, w - y )
         # m_x.append( vector_data[0][0] - x )
         # m_y.append( vector_data[0][1] - y )
         # print( "mean", np.mean(m_x), np.mean(m_y) )
