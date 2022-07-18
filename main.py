@@ -3,9 +3,9 @@ import numpy as np
 from agent import Agent
 
 # env = CogEnvDecoder(env_name="mac_confrontation_v2/cog_confrontation_env.app", no_graphics=False, time_scale=1, worker_id=1) 
-# env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=2) 
-env = CogEnvDecoder(env_name="../linux_v3.0/cog_sim2real_env.x86_64", no_graphics=False, 
-                    time_scale=1, worker_id=2, seed=19260817, force_sync=True) # linux os
+env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False, time_scale=1, worker_id=2) 
+# env = CogEnvDecoder(env_name="../linux_v3.0/cog_sim2real_env.x86_64", no_graphics=False, 
+#                     time_scale=1, worker_id=2, seed=19260817, force_sync=True) # linux os
 
 num_eval_episodes = 10
 
