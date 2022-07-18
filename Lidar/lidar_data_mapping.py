@@ -43,6 +43,8 @@ def bresenham( start, end ):
 
 def lidar_to_gird_map( ang, dist ):
     xy_resolution = 0.02
+    # ang[ np.argwhere(np.is_nan(ang)==True) ] = 0
+    # dist[ np.argwhere(np.is_nan(dist)==True) ] = 4
     ox = np.sin(ang) * dist
     oy = np.cos(ang) * dist
     '''

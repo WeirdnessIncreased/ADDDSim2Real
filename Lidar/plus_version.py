@@ -105,7 +105,7 @@ def check_y( system_axis, temp_x, temp_y, occupancy_map ):
     
 
 def test_function( vector_data, laser_data ):
-
+    global status_x
     vector_data[0][0] += SETTED_ERROR_X
     vector_data[0][1] += SETTED_ERROR_Y
 
@@ -132,7 +132,10 @@ def test_function( vector_data, laser_data ):
                 y = vector_data[0][1] + ERROR_Y
             else:
                 y = temp_y
+    
+    
     print( status_x, ERROR_X )
+    status_x = 1
     return x, y 
         
 
