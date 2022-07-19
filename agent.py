@@ -8,8 +8,11 @@ from modules import extended_kalman_filter as ex
 import matplotlib.pyplot as plt
 import history.kalman as his_kal
 from Cogenvdecoder.CogEnvDecoder import CogEnvDecoder
-from modules.lidar_data_mapping import lidar_mapping
-from modules.lidar_data_mapping import update as lidar_update
+# from modules.lidar_data_mapping import lidar_mapping
+# from modules.lidar_data_mapping import update as lidar_update
+import modules.lidar_data_mapping as lidar
+lidar_mapping = lidar.lidar_mapping
+lidar_update  = lidar.update
 
 np.random.seed(19260817)
 
@@ -136,6 +139,8 @@ class Agent:
                 debias_steps += 1
         except:
             pass
+        print('fixed coordinate', obs['vector'][0])
+        print('lidar\'s status_x & status_y', lidar.status_x, lidar.status_y)
         ########## noise reduction ##########
         
         ############# get action #############

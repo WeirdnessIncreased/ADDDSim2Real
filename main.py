@@ -7,7 +7,7 @@ env = CogEnvDecoder(env_name="../mac_v2/cog_sim2real_env.app", no_graphics=False
 # env = CogEnvDecoder(env_name="../linux_v3.0/cog_sim2real_env.x86_64", no_graphics=False, 
 #                     time_scale=1, worker_id=2, seed=19260817, force_sync=True) # linux os
 
-num_eval_episodes = 10
+num_eval_episodes = 50
 
 eval_agent = Agent(model_path="")
 
@@ -15,7 +15,14 @@ activated_goals_analy = []
 time_token_analy = []
 attack_damage_analy = []
 score_analy = []
+
+np.random.seed(19260817)
+
 for i in range(num_eval_episodes):
+
+    bias_x = np.random.uniform(-0.5, 0.5, 1)[0]
+    bias_y = np.random.uniform(-0.5, 0.5, 1)[0]
+
 
     obs = env.reset()
     # if i <= 4: continue
@@ -23,8 +30,12 @@ for i in range(num_eval_episodes):
     info = None
 
     while not done:
-        print(info)
-        print(obs['vector'])
+        print('episode', i)
+        print('info', info)
+        print('vector', obs['vector'])
+        obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_x
+        obs["vector"][0][1] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_y
+        print('noisy coordinate', obs['vector'][0])
         # if info != None and info[1][3] == 5: break # attention
         action = eval_agent.agent_control(obs=obs, done=done, info=info)
         obs, reward, done, info = env.step(action)
@@ -40,7 +51,7 @@ for i in range(num_eval_episodes):
         print('found error at step', i)
         break
     score_analy.append(score)
-    print('===', np.mean(score))
+    print('current mean score', np.mean(score))
 
 mean_activated_goal = np.mean(activated_goals_analy)
 mean_time_token = np.mean(time_token_analy)
