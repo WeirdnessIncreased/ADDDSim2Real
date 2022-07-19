@@ -126,19 +126,21 @@ class Agent:
         obs["vector"][0][0] = min(max(x, 0.05), map_size[0] - 0.05)
         obs["vector"][0][1] = min(max(y, 0.05), map_size[1] - 0.05)
 
+        laser_data = np.array(obs["laser"])
+        try:
+            x, y, check = lidar_mapping(obs['vector'], laser_data)
+            if not (abs(obs['vector'][0][0] - x) > 0.6 or abs(obs['vector'][0][1] - y) > 0.6):
+                if( check ):
+                    debias_sum_x += obs['vector'][0][0] - x
+                    debias_sum_y += obs['vector'][0][1] - y
+                    debias_steps += 1
+        except:
+            pass
+
         if debias_steps != 0:
             obs["vector"][0][0] -= debias_sum_x / debias_steps
             obs["vector"][0][1] -= debias_sum_y / debias_steps
 
-        laser_data = np.array(obs["laser"])
-        try:
-            x, y = lidar_mapping(obs['vector'], laser_data)
-            if not (abs(obs['vector'][0][0] - x) > 0.6 or abs(obs['vector'][0][1] - y) > 0.6):
-                debias_sum_x += obs['vector'][0][0] - x
-                debias_sum_y += obs['vector'][0][1] - y
-                debias_steps += 1
-        except:
-            pass
         print('fixed coordinate', obs['vector'][0])
         print('lidar\'s status_x & status_y', lidar.status_x, lidar.status_y)
         ########## noise reduction ##########

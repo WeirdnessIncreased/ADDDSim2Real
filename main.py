@@ -22,7 +22,7 @@ for i in range(num_eval_episodes):
 
     bias_x = np.random.uniform(-0.5, 0.5, 1)[0]
     bias_y = np.random.uniform(-0.5, 0.5, 1)[0]
-
+    # bias_x = 0.1
 
     obs = env.reset()
     # if i <= 4: continue
@@ -33,9 +33,10 @@ for i in range(num_eval_episodes):
         print('episode', i)
         print('info', info)
         print('vector', obs['vector'])
-        obs["vector"][0][0] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_x
-        obs["vector"][0][1] += np.random.uniform(-0.1, 0.1, 1)[0] + bias_y
+        obs["vector"][0][0] += bias_x
+        obs["vector"][0][1] += bias_y
         print('noisy coordinate', obs['vector'][0])
+        print("error:", bias_x, bias_y )
         # if info != None and info[1][3] == 5: break # attention
         action = eval_agent.agent_control(obs=obs, done=done, info=info)
         obs, reward, done, info = env.step(action)

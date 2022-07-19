@@ -8,6 +8,10 @@ status_x = 0
 status_y = 0
 ERROR_X = 0
 ERROR_Y = 0
+step = 0
+y_step = 0
+final_x_step = 0
+final_y_step = 0
 
 def bresenham( start, end ):
     # en.wikipedia.org/wiki/Bresenham's_line_algorithm
@@ -154,19 +158,24 @@ def normal_method( vector_data, occupancy_map ):
 def check_x( system_axis, temp_x, temp_y, occupancy_map ):
     global status_x
     global ERROR_X
+    # print("1")
     sys_x = system_axis
     obstacle_map = g_obstacle_map
     left_x, right_x = -1, -1
-    
+    # print("2")
     for i in range( 0, 75 ):
         if( occupancy_map[i][75] == 8 ):
             left_x = i
             break
+    # print("3")
     left_dis = 75 - left_x
     dis_error = 999999
+    real_x_pos = -1
     if( left_x != -1 ):
+        # print("4")
         x_pos, y_pos = temp_x / 0.02, temp_y / 0.02
         x_pos, y_pos = (int)(x_pos), (int)(y_pos)
+        # print("5")
         for y in range( y_pos - 16, y_pos + 16 ):
             if( y >= 0 and y <= 224 ):
                 for i in range(  x_pos, x_pos - left_dis - 30, -1 ):
@@ -174,16 +183,31 @@ def check_x( system_axis, temp_x, temp_y, occupancy_map ):
                         if( abs( x_pos - i - left_dis ) < dis_error ):
                             dis_error = abs( x_pos - i - left_dis )
                             real_x_pos = i + left_dis
-        status_x = 1
-        ERROR_X = real_x_pos * 0.02 - sys_x
+                            # print("6")
+        if( real_x_pos != -1 ):
+            status_x = 1
+        # print( "Find it on left!",( real_x_pos * 0.02 - sys_x ) )
+            ERROR_X = ( real_x_pos * 0.02 - sys_x )
+            return 1
 
     for i in range( 76, 150 ):
         if( occupancy_map[i][75] == 8 ):
             right_x = i
             break
     right_dis = right_x - 75
+    real_x_pos = -1
     dis_error = 999999
+    # print( "7", right_x )
     if( right_x != -1 ):
+        '''
+        x_0, y_0 = [], []
+        for i in range( 0, 150 ):
+            for j in range( 0, 150 ):
+                if( occupancy_map[i][j] == 8 ):
+                    x_0.append(i)
+                    y_0.append(j)
+        plt.plot( x_0, y_0, '.g' )
+        plt.show( block = True )'''
         x_pos, y_pos = (int)( temp_x / 0.02 ), (int)(temp_y / 0.02)
         for y in range( y_pos - 16, y_pos + 16 ):
             if( y >= 0 and y <= 224 ):
@@ -192,8 +216,14 @@ def check_x( system_axis, temp_x, temp_y, occupancy_map ):
                         if( abs( i - x_pos - right_dis ) < dis_error ):
                             dis_error = abs( i - x_pos - right_dis )
                             real_x_pos = i - right_dis
-        status_x = 1
-        ERROR_X = real_x_pos * 0.02 - sys_x
+                            # p#rint("8")
+        if( real_x_pos != -1 ):
+            status_x = 1
+            # print("9")
+        # print( "Find it on right!",( real_x_pos * 0.02 - sys_x ) )
+            ERROR_X = ( real_x_pos * 0.02 - sys_x )
+            return 1
+    return 0
     
 
 
@@ -223,7 +253,8 @@ def check_y( system_axis, temp_x, temp_y, occupancy_map ):
                             dis_error = abs( x_pos - i - top_dis )
                             real_y_pos = i + top_dis
         status_y = 1
-        ERROR_Y = real_y_pos * 0.02 - sys_y
+        ERROR_Y = ( real_y_pos * 0.02 - sys_y )
+        return 1 
     
     for i in range( 76, 150 ):
         if( occupancy_map[75][i] == 8 ):
@@ -241,31 +272,32 @@ def check_y( system_axis, temp_x, temp_y, occupancy_map ):
                             dis_error = abs( i - y_pos - bottom_dis )
                             real_y_pos = i - bottom_dis
         status_y = 1
-        ERROR_Y = real_y_pos * 0.02 - sys_y
+        ERROR_Y = ( real_y_pos * 0.02 - sys_y )
+        return 1
+    return 0
 
 def lidar_mapping( vector_data, laser_data ):
+    global step
+    step += 1
+    bo = 1
     ang, dist = [], []
     for i in range( 0, 61 ):
         # print( (float)( -vector_data[0][2] + ( 135 * ( i - 30 ) / 30 * pi / 180) )  )
         ang.append((float)( pi * 0.5 - vector_data[0][2] + ( 135 * ( i - 30 ) / 30 * pi / 180) ))
         dist.append( (float)(laser_data[i]) )
-
-    x = vector_data[0][0] + ERROR_X * status_x
-    y = vector_data[0][1] + ERROR_Y * status_y
-
-    if( ( status_x * status_y ) == 0 ):
-        occupancy_map = lidar_to_gird_map( ang, dist )
-        temp_x, temp_y = normal_method( vector_data, occupancy_map )
-        if( status_x == 0 ):
-            if( check_x( vector_data[0][0], temp_x, temp_y, occupancy_map ) ):
-                x = vector_data[0][0] + ERROR_X
-            else:
-                x = temp_x
-
-        if( status_y == 0 ):
-            if( check_y( vector_data[0][1], temp_x, temp_y, occupancy_map ) ):
-                y = vector_data[0][1] + ERROR_Y
-            else:
-                y = temp_y
-    # print( status_x, ERROR_X )
-    return x, y 
+    occupancy_map = lidar_to_gird_map( ang, dist )  
+    
+    temp_x, temp_y = normal_method( vector_data, occupancy_map )
+    if( check_x( vector_data[0][0], temp_x, temp_y, occupancy_map ) ):
+        x = vector_data[0][0] + ERROR_X
+    else:
+        x = vector_data[0][0] + ERROR_X
+        bo = 0
+    if( check_y( vector_data[0][1], temp_x, temp_y, occupancy_map ) ):
+        y = vector_data[0][1] + ERROR_Y
+    else:
+        y = vector_data[0][1] + ERROR_Y
+        bo = 0
+    # print( "fixed info", ERROR_X, ERROR_Y )
+    
+    return x, y, bo
