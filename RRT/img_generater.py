@@ -36,6 +36,8 @@ def main():
             for y in np.arange(pos[1], pos[3]):    
                 obstacle_map[ (int)( x ), (int)( y ) ] = 0
 
+    obstacle_map[ int(3.68 / 0.02), int( 1.41   / 0.02 ) ] = 0
+
     save_path = "1.png"
     cv2.imwrite( save_path, obstacle_map )
 
