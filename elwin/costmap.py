@@ -22,7 +22,7 @@ def generate_static_map():
         'B9': [0, 3.28, 1, 3.48]
     }
 
-    ob_img = cv2.imread('files/border_and_center.jpg') # B5
+    ob_img = cv2.imread('../files/border_and_center.jpg') # B5
 
     for i in range(448):
         for j in range(808):
@@ -40,18 +40,18 @@ def generate_static_map():
                 static_map[i][j] = 1
 
     img_save = static_map * 255
-    cv2.imwrite('files/static_map.bmp', img_save) # 注意保存后是翻转的
+    cv2.imwrite('../files/static_map.bmp', img_save) # 注意保存后是翻转的
         
 
 class CostMap:
     def __init__(self):
-        self.base_map = (cv2.imread('files/static_map.bmp')[:,:,0] != 0).astype(np.float32)
+        self.base_map = (cv2.imread('../files/static_map.bmp')[:,:,0] != 0).astype(np.float32)
         self.dyob_map = np.zeros((448, 808))
-        self.update()
-        self.show()
+        # self.update()
+        # self.show()
         self.base_map = self.inflate(self.base_map) # 膨胀层
         self.update()
-        self.show()
+        # self.show()
         
     def update(self):
         self.map = ((self.base_map + self.dyob_map) != 0).astype(np.float32)
