@@ -4,8 +4,11 @@ from costmap import CostMap
 import matplotlib.pyplot as plt
 
 
+########## hyperparameters ##########
 HEURISTIC_WEIGHT = 1.2
-STEP_SIZE = 10 # [cm]
+STEP_SIZE = 25 # [cm]
+DEFAULT_GOAL_PRECISION = 0.15 # [m]
+########## hyperparameters ##########
 
 
 show_animation = True
@@ -161,7 +164,7 @@ class AStarPlanner:
 
         return motion
 
-    def get_path(self, sx, sy, gx, gy, cost_map, goal_prec=0.10):
+    def get_path(self, sx, sy, gx, gy, cost_map, goal_prec=DEFAULT_GOAL_PRECISION):
 
         if show_animation:
             plt.plot(np.argwhere(cost_map != 0)[:,0], np.argwhere(cost_map != 0)[:,1], ".k")
@@ -174,14 +177,15 @@ class AStarPlanner:
 
         if show_animation:
             plt.plot(rx, ry, "-r")
+            plt.plot(rx, ry, "xr")
             plt.pause(0.001)
             plt.show(block=False)
-            plt.pause(2)
+            plt.pause(20)
 
         return rx, ry
 
 if __name__ == '__main__':
     cost_map = CostMap()
     planner = AStarPlanner()
-    planner.get_path(0.30, 0.30, 4.18, 7.60, cost_map.map, 0.10)
+    planner.get_path(0.30, 0.30, 4.18, 7.60, cost_map.map, 0.15)
     pass
