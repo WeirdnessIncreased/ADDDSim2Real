@@ -199,7 +199,6 @@ class Planner:
         iflct = np.argwhere(np.abs(sdiff) > 0).flatten() + 1 # 拐点下标 (inflection points)
         pairs = np.hstack([rx.reshape((-1,1)), ry.reshape((-1,1))])[iflct]
         clusters = fclusterdata(pairs, 32, criterion="distance")
-        print(clusters)
         unq, idx = np.unique(clusters, return_index=True)
         idx = np.array(sorted(idx))
         if len(idx) == 1 and len(iflct) > 2:
