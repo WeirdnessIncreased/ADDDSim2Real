@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from params import args
 from costmap import CostMap
 import matplotlib.pyplot as plt
 
@@ -9,9 +10,6 @@ HEURISTIC_WEIGHT = 1.2
 STEP_SIZE = 25 # [cm]
 DEFAULT_GOAL_PRECISION = 0.15 # [m]
 ########## hyperparameters ##########
-
-
-show_animation = True
 
 
 class AStarPlanner:
@@ -68,7 +66,7 @@ class AStarPlanner:
                     self.calc_heuristic(g_node, open_set[x]))
             c_node = open_set[c_id]
 
-            if show_animation:
+            if args.anime_planning:
                 plt.plot(c_node.x, c_node.y, "xc")
                 # for stopping simulation with the esc key.
                 plt.gcf().canvas.mpl_connect('key_release_event', \
@@ -166,7 +164,7 @@ class AStarPlanner:
 
     def get_path(self, sx, sy, gx, gy, cost_map, goal_prec=DEFAULT_GOAL_PRECISION):
 
-        if show_animation:
+        if args.anime_planning:
             plt.plot(np.argwhere(cost_map != 0)[:,0], np.argwhere(cost_map != 0)[:,1], ".k")
             plt.plot(sx, sy, "og")
             plt.plot(gx, gy, "xb")
@@ -175,12 +173,12 @@ class AStarPlanner:
 
         rx, ry = self.planning(sx, sy, gx, gy, cost_map, goal_prec)
 
-        if show_animation:
+        if args.anime_planning:
             plt.plot(rx, ry, "-r")
             plt.plot(rx, ry, "xr")
             plt.pause(0.001)
             plt.show(block=False)
-            plt.pause(20)
+            plt.pause(1)
 
         return rx, ry
 
@@ -188,4 +186,3 @@ if __name__ == '__main__':
     cost_map = CostMap()
     planner = AStarPlanner()
     planner.get_path(0.30, 0.30, 4.18, 7.60, cost_map.map, 0.15)
-    pass
