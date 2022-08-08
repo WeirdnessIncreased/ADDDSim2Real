@@ -199,20 +199,33 @@ class Planner:
         iflct = np.argwhere(np.abs(sdiff) > 0).flatten() + 1 # 拐点下标 (inflection points)
         pairs = np.hstack([rx.reshape((-1,1)), ry.reshape((-1,1))])[iflct]
         clusters = fclusterdata(pairs, 32, criterion="distance")
+        print(clusters)
         unq, idx = np.unique(clusters, return_index=True)
-        idx = np.array(sorted(idx)) + 1
-        for i in range(len(idx) - 1):
-            if idx[i + 1] - idx[i] > 2:
-                sx = rx[iflct[idx[i]]]
-                sy = ry[iflct[idx[i]]]
-                gx = rx[iflct[idx[i + 1] - 1]]
-                gy = ry[iflct[idx[i + 1] - 1]]
-                if self.is_clear_path(sx, sy, gx, gy):
-                    linspace_len = len(nx[iflct[idx[i]] + 1:iflct[idx[i + 1] - 1]]) + 2
-                    nx[iflct[idx[i]] + 1:iflct[idx[i + 1] - 1]] = \
-                            np.linspace(sx, gx, linspace_len).astype(int)[1:-1]
-                    ny[iflct[idx[i]] + 1:iflct[idx[i + 1] - 1]] = \
-                            np.linspace(sy, gy, linspace_len).astype(int)[1:-1]
+        idx = np.array(sorted(idx))
+        if len(idx) == 1 and len(iflct) > 2:
+            sx = rx[iflct[+0]]
+            sy = ry[iflct[+0]]
+            gx = rx[iflct[-1]]
+            gy = ry[iflct[-1]]
+            if self.is_clear_path(sx, sy, gx, gy):
+                linspace_len = len(nx[iflct[0] + 1:iflct[-1]]) + 2
+                nx[iflct[0] + 1:iflct[-1]] = \
+                        np.linspace(sx, gx, linspace_len).astype(int)[1:-1]
+                ny[iflct[0] + 1:iflct[-1]] = \
+                        np.linspace(sy, gy, linspace_len).astype(int)[1:-1]
+        else:
+            for i in range(len(idx) - 1):
+                if idx[i + 1] - idx[i] > 2:
+                    sx = rx[iflct[idx[i]]]
+                    sy = ry[iflct[idx[i]]]
+                    gx = rx[iflct[idx[i + 1] - 1]]
+                    gy = ry[iflct[idx[i + 1] - 1]]
+                    if self.is_clear_path(sx, sy, gx, gy):
+                        linspace_len = len(nx[iflct[idx[i]] + 1:iflct[idx[i + 1] - 1]]) + 2
+                        nx[iflct[idx[i]] + 1:iflct[idx[i + 1] - 1]] = \
+                                np.linspace(sx, gx, linspace_len).astype(int)[1:-1]
+                        ny[iflct[idx[i]] + 1:iflct[idx[i + 1] - 1]] = \
+                                np.linspace(sy, gy, linspace_len).astype(int)[1:-1]
         return nx, ny, rx[iflct], ry[iflct]
     
     def get_path(self, sx, sy, gx, gy, cost_map, goal_prec=DEFAULT_GOAL_PRECISION):
