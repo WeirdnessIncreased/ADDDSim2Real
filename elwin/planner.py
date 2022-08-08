@@ -15,7 +15,7 @@ DEFAULT_GOAL_PRECISION = 0.10 # [m]
 ########## hyperparameters ##########
 
 
-class AStarPlanner:
+class Planner:
     def __init__(self):
         self.min_x, self.min_y = 0, 0
         self.max_x, self.max_y = 448, 808
@@ -83,18 +83,14 @@ class AStarPlanner:
                 print('Found a path.')
                 break
 
-            # Remove the item from the open set
             del open_set[c_id]
-
-            # Add it to the closed set
             closed_set[c_id] = c_node
 
-            # expand_grid search grid based on motion model
             for i, _ in enumerate(self.motion):
                 node = self.Node(c_node.x + self.motion[i][0],
                                  c_node.y + self.motion[i][1],
                                  c_node.cost + self.motion[i][2], c_id)
-                n_id = self.get_index(node)
+                n_id = self.get_index(node) # n_id 即 next_id
 
                 if not self.verify_node(node):
                     continue
@@ -121,7 +117,6 @@ class AStarPlanner:
             ry.append(n.y)
             parent_index = n.parent_index
             la_x, la_y = n.x, n.y
-
         return rx, ry
 
     @staticmethod
@@ -192,6 +187,9 @@ class AStarPlanner:
         return nx, ny
 
     def simplify(self, rx, ry):
+        """
+        找到路径中的拐点，然后对拐点进行聚类，同簇的尝试用直线相连。
+        """
         rx = np.array(rx)
         ry = np.array(ry)
         nx = copy.deepcopy(rx)
@@ -202,7 +200,7 @@ class AStarPlanner:
         pairs = np.hstack([rx.reshape((-1,1)), ry.reshape((-1,1))])[iflct]
         clusters = fclusterdata(pairs, 32, criterion="distance")
         unq, idx = np.unique(clusters, return_index=True)
-        idx = np.array(sorted(idx)) + 1 # indexes
+        idx = np.array(sorted(idx)) + 1
         for i in range(len(idx) - 1):
             if idx[i + 1] - idx[i] > 2:
                 sx = rx[iflct[idx[i]]]
@@ -210,9 +208,6 @@ class AStarPlanner:
                 gx = rx[iflct[idx[i + 1] - 1]]
                 gy = ry[iflct[idx[i + 1] - 1]]
                 if self.is_clear_path(sx, sy, gx, gy):
-                    # print('found a simpler path!', iflct[idx[i]], iflct[idx[i + 1] - 1])
-                    # nx = nx[:iflct[idx[i]] + 1] + nx[iflct[idx[i + 1]] - 1:]
-                    # ny = ny[:iflct[idx[i]] + 1] + ny[iflct[idx[i + 1]] - 1:]
                     linspace_len = len(nx[iflct[idx[i]] + 1:iflct[idx[i + 1] - 1]]) + 2
                     nx[iflct[idx[i]] + 1:iflct[idx[i + 1] - 1]] = \
                             np.linspace(sx, gx, linspace_len).astype(int)[1:-1]
@@ -246,6 +241,6 @@ class AStarPlanner:
 
 if __name__ == '__main__':
     cost_map = CostMap()
-    planner = AStarPlanner()
+    planner = Planner()
     planner.get_path(0.40, 0.40, 4.18, 7.60, cost_map.map, 0.10)
     planner.get_path(1.30, 7.30, 4.18, 7.60, cost_map.map, 0.10)
