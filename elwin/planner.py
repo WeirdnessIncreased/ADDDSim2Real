@@ -1,14 +1,17 @@
 import math
+import copy
+import scipy
 import numpy as np
 from params import args
 from costmap import CostMap
 import matplotlib.pyplot as plt
+from scipy.cluster.hierarchy import fclusterdata
 
 
 ########## hyperparameters ##########
 HEURISTIC_WEIGHT = 1.2
-STEP_SIZE = 25 # [cm]
-DEFAULT_GOAL_PRECISION = 0.15 # [m]
+STEP_SIZE = 15 # [cm]
+DEFAULT_GOAL_PRECISION = 0.10 # [m]
 ########## hyperparameters ##########
 
 
@@ -67,7 +70,7 @@ class AStarPlanner:
             c_node = open_set[c_id]
 
             if args.anime_planning:
-                plt.plot(c_node.x, c_node.y, "xc")
+                plt.plot(c_node.x, c_node.y, '.', color='0.8')
                 # for stopping simulation with the esc key.
                 plt.gcf().canvas.mpl_connect('key_release_event', \
                         lambda event: [exit(0) if event.key == 'escape' else None])
@@ -107,7 +110,7 @@ class AStarPlanner:
 
         rx, ry = self.calc_final_path(g_node, closed_set)
 
-        return rx, ry
+        return rx[::-1], ry[::-1]
 
     def calc_final_path(self, goal_node, closed_set):
         rx, ry = [goal_node.x], [goal_node.y]
@@ -162,27 +165,87 @@ class AStarPlanner:
 
         return motion
 
-    def get_path(self, sx, sy, gx, gy, cost_map, goal_prec=DEFAULT_GOAL_PRECISION):
+    def is_clear_path(self, sx, sy, gx, gy):
+        cx, cy = sx, sy
+        while True:
+            flg = False
+            if cx == gx and cy == gy:
+                return True
+            nx, ny = cx, cy
+            for dx, dy, dis in self.motion:
+                dx /= STEP_SIZE
+                dy /= STEP_SIZE
+                xx, yy = cx + dx, cy + dy
+                if self.obstacle_map[int(xx)][int(yy)] != 0:
+                    continue
+                if math.hypot(gx - xx, gy - yy) < math.hypot(gx - nx, gy - ny):
+                    nx, ny = xx, yy
+                    flg = True
+            if not flg:
+                return False
+            cx, cy = nx, ny
 
+    def smoothen(self, rx, ry):
+        tck, u = scipy.interpolate.splprep([rx, ry], s=10)
+        u = np.linspace(min(u), max(u), len(rx) * 2)[:]
+        nx, ny = scipy.interpolate.splev(u, tck)
+        return nx, ny
+
+    def simplify(self, rx, ry):
+        rx = np.array(rx)
+        ry = np.array(ry)
+        nx = copy.deepcopy(rx)
+        ny = copy.deepcopy(ry)
+        slope = (ry[1:] - ry[:-1]) / ((rx[1:] - rx[:-1]) + 1e-8)
+        sdiff = slope[1:] - slope[:-1]
+        iflct = np.argwhere(np.abs(sdiff) > 0).flatten() + 1 # 拐点下标 (inflection points)
+        pairs = np.hstack([rx.reshape((-1,1)), ry.reshape((-1,1))])[iflct]
+        clusters = fclusterdata(pairs, 32, criterion="distance")
+        unq, idx = np.unique(clusters, return_index=True)
+        idx = np.array(sorted(idx)) + 1 # indexes
+        for i in range(len(idx) - 1):
+            if idx[i + 1] - idx[i] > 2:
+                sx = rx[iflct[idx[i]]]
+                sy = ry[iflct[idx[i]]]
+                gx = rx[iflct[idx[i + 1] - 1]]
+                gy = ry[iflct[idx[i + 1] - 1]]
+                if self.is_clear_path(sx, sy, gx, gy):
+                    # print('found a simpler path!', iflct[idx[i]], iflct[idx[i + 1] - 1])
+                    # nx = nx[:iflct[idx[i]] + 1] + nx[iflct[idx[i + 1]] - 1:]
+                    # ny = ny[:iflct[idx[i]] + 1] + ny[iflct[idx[i + 1]] - 1:]
+                    linspace_len = len(nx[iflct[idx[i]] + 1:iflct[idx[i + 1] - 1]]) + 2
+                    nx[iflct[idx[i]] + 1:iflct[idx[i + 1] - 1]] = \
+                            np.linspace(sx, gx, linspace_len).astype(int)[1:-1]
+                    ny[iflct[idx[i]] + 1:iflct[idx[i + 1] - 1]] = \
+                            np.linspace(sy, gy, linspace_len).astype(int)[1:-1]
+        return nx, ny, rx[iflct], ry[iflct]
+    
+    def get_path(self, sx, sy, gx, gy, cost_map, goal_prec=DEFAULT_GOAL_PRECISION):
         if args.anime_planning:
+            plt.clf()
             plt.plot(np.argwhere(cost_map != 0)[:,0], np.argwhere(cost_map != 0)[:,1], ".k")
-            plt.plot(sx, sy, "og")
-            plt.plot(gx, gy, "xb")
+            plt.plot(sx * 100, sy * 100, "*g")
+            plt.plot(gx * 100, gy * 100, "*b")
             plt.grid(True)
             plt.axis("equal")
 
-        rx, ry = self.planning(sx, sy, gx, gy, cost_map, goal_prec)
+        rx0, ry0 = self.planning(sx, sy, gx, gy, cost_map, goal_prec)
+        rx1, ry1, ix, iy = self.simplify(rx0, ry0)
+        rx2, ry2 = self.smoothen(rx1, ry1)
 
         if args.anime_planning:
-            plt.plot(rx, ry, "-r")
-            plt.plot(rx, ry, "xr")
+            plt.plot(rx0, ry0, 'xg')
+            plt.plot(ix, iy, "+r")
+            plt.plot(rx1, ry1, "2b")
+            plt.plot(rx2, ry2, "-y")
             plt.pause(0.001)
             plt.show(block=False)
-            plt.pause(1)
+            plt.pause(5)
 
-        return rx, ry
+        return rx2, ry2
 
 if __name__ == '__main__':
     cost_map = CostMap()
     planner = AStarPlanner()
-    planner.get_path(0.30, 0.30, 4.18, 7.60, cost_map.map, 0.15)
+    planner.get_path(0.40, 0.40, 4.18, 7.60, cost_map.map, 0.10)
+    planner.get_path(1.30, 7.30, 4.18, 7.60, cost_map.map, 0.10)
