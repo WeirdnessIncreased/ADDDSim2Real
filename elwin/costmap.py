@@ -1,16 +1,22 @@
 import cv2
 import copy
 import numpy as np
-from params import args
 import matplotlib.pyplot as plt
 from skimage.morphology import disk, binary_dilation
 
+try:
+    from params import args
+except:
+    from elwin.params import args
+
+
 ########## hyperparameters ##########
-INFLATION_RADIUS = 20 # size of RoboMaster EP Robot: 32×24×27 [cm]
+INFLATION_RADIUS = 23 # size of RoboMaster EP Robot: 32×24×27 [cm]
 ########## hyperparameters ##########
 
+
 def generate_static_map():
-    static_map = np.zeros((448, 808))
+    static_map = np.zeros((808, 448))
     fixed_obstacles = {
         'B1': [7.08, 1.00, 8.08, 1.2],
         'B2': [5.78, 2.14 ,6.58 , 2.34],
@@ -23,21 +29,21 @@ def generate_static_map():
         'B9': [0, 3.28, 1, 3.48]
     }
 
-    ob_img = cv2.imread('../files/border_and_center.jpg') # B5
+    ob_img = cv2.imread('../files/border_and_center.jpg') # B5 and border
 
     for i in range(448):
         for j in range(808):
             if ob_img[i][j][0] < 200:
-                static_map[i][j] = 1
+                static_map[j][i] = 1
 
     for name in fixed_obstacles:
-        y1, x1, y2, x2 = fixed_obstacles[name]
+        x1, y1, x2, y2 = fixed_obstacles[name]
         x1 = int(np.floor(x1 * 100))
         y1 = int(np.floor(y1 * 100))
         x2 = int(np.ceil(x2 * 100))
         y2 = int(np.ceil(y2 * 100))
-        for i in range(x1, min(x2, 448)):
-            for j in range(y1, min(y2, 808)):
+        for i in range(x1, min(x2, 808)):
+            for j in range(y1, min(y2, 448)):
                 static_map[i][j] = 1
 
     img_save = static_map * 255
@@ -46,10 +52,11 @@ def generate_static_map():
 
 class CostMap:
     def __init__(self):
-        self.base_map = (cv2.imread('../files/static_map.bmp')[:,:,0] != 0).astype(np.float32)
-        self.dyob_map = np.zeros((448, 808))
-        # self.update()
-        # self.show()
+        try:
+            self.base_map = (cv2.imread('../files/static_map.bmp')[:,:,0] != 0).astype(np.float32)
+        except:
+            self.base_map = (cv2.imread('./files/static_map.bmp')[:,:,0] != 0).astype(np.float32)
+        self.dyob_map = np.zeros((808, 448))
         self.base_map = self.inflate(self.base_map) # 膨胀层
         self.update()
         # self.show()
@@ -84,7 +91,7 @@ class CostMap:
         #     for dx, dy, dis in directions:
         #         num_cal += 1
         #         x1, y1 = x0 + dx, y0 + dy
-        #         if x1 < 0 or x1 >= 448 or y1 < 0 or y1 >= 808:
+        #         if x1 < 0 or x1 >= 808 or y1 < 0 or y1 >= 448:
         #             continue
         #         if ret[x1][y1] == 1 or ret[x1][y1] + dis > rad:
         #             continue
@@ -99,18 +106,26 @@ class CostMap:
         """
         obs: (num_obs, 2), a list of coordinates (x, y) [m]
         """
-        self.dyob_map = np.zeros((448, 808))
+        self.dyob_map = np.zeros((808, 448))
         obs_for_inflation = []
         for ob in obs:
-            cx, cy = int(x * 100), int(y * 100)
-            obs_for_inflation.append([cx, cy])
-            for x in range(max(0, cx - 15), min(cx + 15, 448)):
-                for y in range(max(cy - 15, 0), min(cy + 15, 808)):
-                    self.dyob_map[x][y] = 1
+            cx, cy = int(ob[0] * 100), int(ob[1] * 100)
+            # print('dyob', ob, cx, cy)
+            # obs_for_inflation.append([cx, cy])
+            xx = np.arange(max(0, cx - 10), min(cx + 10, 808))
+            yy = np.arange(max(0, cy - 10), min(cy + 10, 448))
+            xx, yy = np.repeat(xx, len(yy)), yy.tolist() * len(xx)
+            self.dyob_map[xx, yy] = 1
         self.dyob_map = self.inflate(self.dyob_map) # , np.array(obs_for_inflation))
+        if args.anime_dyob:
+            plt.clf()
+            plt.imshow(self.dyob_map, cmap='gray_r', origin='lower')
+            plt.show()
         self.update()
+
+
 
 if __name__ == '__main__':
     generate_static_map()
     costmap = CostMap()
-    # costmap.show()
+    costmap.show()

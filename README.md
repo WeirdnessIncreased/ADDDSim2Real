@@ -1,5 +1,4 @@
 # ADDDSim2Real
-## Stage_1
 
 Aduiduidui's repo for Sim2Real competition.
 
@@ -11,7 +10,30 @@ No additional package is needed to run the agent for a properly built `sim2real`
 
 耶耶耶！
 
-## Stage_2
+## New method
+
+**Run main program**
+
+- Standard run：`python elwin_main.py --anime_run --no_graphics`
+
+```bash
+Usage: elwin_main.py [-h] [--anime_plan] [--anime_curv] [--anime_dyob]
+                     [--anime_run] [--no_graphics]
+Optional arguments:
+  -h, --help     show this help message and exit
+  --anime_plan   show animation when planning
+  --anime_curv   show curvature of a path
+  --anime_dyob   show dynamic obstacles
+  --anime_run    show real time running animation
+  --no_graphics  don't show simulator graphics
+```
+
+**Run modules in folder *elwin***
+
+- Path planning & tracking test: `python planner.py --anime_plan --anime_curv `
+- Re-generate the cost map: `python costmap.py `
+
+## Stage_2 信息
 
 ### 相同的地方：
 

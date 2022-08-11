@@ -2,24 +2,33 @@ import math
 import copy
 import scipy
 import numpy as np
-from params import args
-from costmap import CostMap
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import fclusterdata
+
+try:
+    from params import args
+    from costmap import CostMap
+    from tracker import Tracker
+except:
+    from elwin.params import args
+    from elwin.costmap import CostMap
+    from elwin.tracker import Tracker
 
 
 ########## hyperparameters ##########
 HEURISTIC_WEIGHT = 1.2
-STEP_SIZE = 15 # [cm]
+STEP_SIZE = 10 # [cm]
 DEFAULT_GOAL_PRECISION = 0.10 # [m]
+WAYPOINT_INTERVAL = 5 # [cm]
+PATIENCE = 7
 ########## hyperparameters ##########
 
 
 class Planner:
     def __init__(self):
         self.min_x, self.min_y = 0, 0
-        self.max_x, self.max_y = 448, 808
-        self.x_width, self.y_width = 448, 808
+        self.max_x, self.max_y = 808, 448
+        self.x_width, self.y_width = 808, 448 
         self.motion = self.get_motion_model()
         self.obstacle_map = None 
 
@@ -49,16 +58,18 @@ class Planner:
         gx = int(gx * 100)
         gy = int(gy * 100)
 
-        sx = min(447, max(0, sx))
-        sy = min(807, max(0, sy))
-        gx = min(447, max(0, gx))
-        gy = min(807, max(0, gy))
+        sx = min(807, max(0, sx))
+        sy = min(447, max(0, sy))
+        gx = min(807, max(0, gx))
+        gy = min(447, max(0, gy))
 
         s_node = self.Node(sx, sy, 0.0, -1)
         g_node = self.Node(gx, gy, 0.0, -1)
 
         open_set, closed_set = dict(), dict()
         open_set[self.get_index(s_node)] = s_node
+
+        patience = -1
 
         while True:
             if len(open_set) == 0:
@@ -69,22 +80,39 @@ class Planner:
                     self.calc_heuristic(g_node, open_set[x]))
             c_node = open_set[c_id]
 
-            if args.anime_planning:
+            if args.anime_plan:
                 plt.plot(c_node.x, c_node.y, '.', color='0.8')
-                # for stopping simulation with the esc key.
                 plt.gcf().canvas.mpl_connect('key_release_event', \
                         lambda event: [exit(0) if event.key == 'escape' else None])
                 if len(closed_set.keys()) % 10 == 0:
                     plt.pause(0.001)
 
-            if math.hypot(c_node.x - g_node.x, c_node.y - g_node.y) * 0.01 < goal_prec:
-                g_node.parent_index = c_node.parent_index
-                g_node.cost = c_node.cost
-                print('Found a path.')
-                break
+            if patience != -1:
+                patience += 1
+                if patience >= PATIENCE:
+                    break
 
             del open_set[c_id]
             closed_set[c_id] = c_node
+
+            if math.hypot(c_node.x - g_node.x, c_node.y - g_node.y) * 0.01 < goal_prec:
+                g_node.parent_index = self.get_index(c_node)
+                g_node.cost = c_node.cost
+                print('Found a path.')
+                if patience == -1:
+                    patience = 0 
+                elif math.hypot(c_node.x - g_node.x, c_node.y - g_node.y) < \
+                        math.hypot(closed_set[g_node.parent_index].x - g_node.x, \
+                        closed_set[g_node.parent_index].y - g_node.y):
+                    g_node.parent_index = self.get_index(c_node)
+                    g_node.cost = c_node.cost
+                    print('found a better path')
+
+            if math.hypot(c_node.x - g_node.x, c_node.y - g_node.y) * 0.01 < DEFAULT_GOAL_PRECISION:
+                g_node.parent_index = self.get_index(c_node)
+                g_node.cost = c_node.cost
+                print('Found a best path.')
+                break
 
             for i, _ in enumerate(self.motion):
                 node = self.Node(c_node.x + self.motion[i][0],
@@ -105,8 +133,12 @@ class Planner:
                         open_set[n_id] = node
 
         rx, ry = self.calc_final_path(g_node, closed_set)
+        rx, ry = rx[::-1], ry[::-1]
 
-        return rx[::-1], ry[::-1]
+        if not math.hypot(c_node.x - g_node.x, c_node.y - g_node.y) * 0.01 < DEFAULT_GOAL_PRECISION:
+            rx, ry = rx[:-1], ry[:-1]
+
+        return rx, ry
 
     def calc_final_path(self, goal_node, closed_set):
         rx, ry = [goal_node.x], [goal_node.y]
@@ -181,8 +213,12 @@ class Planner:
             cx, cy = nx, ny
 
     def smoothen(self, rx, ry):
+        rx, ry = np.array(rx), np.array(ry)
         tck, u = scipy.interpolate.splprep([rx, ry], s=10)
-        u = np.linspace(min(u), max(u), len(rx) * 2)[:]
+        dis = np.sum(np.hypot(rx[1:] - rx[:-1], ry[1:] - ry[:-1]))
+        num = math.ceil(dis / WAYPOINT_INTERVAL)
+        print(dis, num)
+        u = np.linspace(min(u), max(u), num)
         nx, ny = scipy.interpolate.splev(u, tck)
         return nx, ny
 
@@ -197,16 +233,22 @@ class Planner:
         slope = (ry[1:] - ry[:-1]) / ((rx[1:] - rx[:-1]) + 1e-8)
         sdiff = slope[1:] - slope[:-1]
         iflct = np.argwhere(np.abs(sdiff) > 0).flatten() + 1 # 拐点下标 (inflection points)
-        pairs = np.hstack([rx.reshape((-1,1)), ry.reshape((-1,1))])[iflct]
-        clusters = fclusterdata(pairs, 32, criterion="distance")
-        unq, idx = np.unique(clusters, return_index=True)
-        idx = np.array(sorted(idx))
-        if len(idx) == 1 and len(iflct) > 2:
-            sx = rx[iflct[+0]]
-            sy = ry[iflct[+0]]
-            gx = rx[iflct[-1]]
-            gy = ry[iflct[-1]]
+
+        if len(iflct) <= 2:
+            return rx, ry, [0], [0]
+        else:
+            pairs = np.hstack([rx.reshape((-1,1)), ry.reshape((-1,1))])[iflct]
+            clusters = fclusterdata(pairs, 32, criterion="distance")
+            unq, idx = np.unique(clusters, return_index=True)
+            idx = np.array(sorted(idx))
+        if len(idx) == 1:
+            st, ed = iflct[0], iflct[-1]
+            sx = rx[st]
+            sy = ry[st]
+            gx = rx[ed]
+            gy = ry[ed]
             if self.is_clear_path(sx, sy, gx, gy):
+                print('this is clear')
                 linspace_len = len(nx[iflct[0] + 1:iflct[-1]]) + 2
                 nx[iflct[0] + 1:iflct[-1]] = \
                         np.linspace(sx, gx, linspace_len).astype(int)[1:-1]
@@ -228,7 +270,7 @@ class Planner:
         return nx, ny, rx[iflct], ry[iflct]
     
     def get_path(self, sx, sy, gx, gy, cost_map, goal_prec=DEFAULT_GOAL_PRECISION):
-        if args.anime_planning:
+        if args.anime_plan:
             plt.clf()
             plt.plot(np.argwhere(cost_map != 0)[:,0], np.argwhere(cost_map != 0)[:,1], ".k")
             plt.plot(sx * 100, sy * 100, "*g")
@@ -237,22 +279,36 @@ class Planner:
             plt.axis("equal")
 
         rx0, ry0 = self.planning(sx, sy, gx, gy, cost_map, goal_prec)
-        rx1, ry1, ix, iy = self.simplify(rx0, ry0)
-        rx2, ry2 = self.smoothen(rx1, ry1)
+        try:
+            rx1, ry1, ix, iy = self.simplify(rx0, ry0)
+            rx2, ry2 = self.smoothen(rx1, ry1)
+        except:
+            plt.plot(np.argwhere(cost_map != 0)[:,0], np.argwhere(cost_map != 0)[:,1], ".k")
+            plt.plot(sx * 100, sy * 100, "*g")
+            plt.plot(gx * 100, gy * 100, "*b")
+            plt.grid(True)
+            plt.axis("equal")
+            plt.plot(rx0, ry0, 'xg')
+            plt.pause(0.001)
+            plt.show(block=True)
+            plt.pause(5)
 
-        if args.anime_planning:
+        if args.anime_plan:
             plt.plot(rx0, ry0, 'xg')
             plt.plot(ix, iy, "+r")
             plt.plot(rx1, ry1, "2b")
             plt.plot(rx2, ry2, "-y")
             plt.pause(0.001)
-            plt.show(block=False)
+            plt.show(block=True)
             plt.pause(5)
 
         return rx2, ry2
 
 if __name__ == '__main__':
-    cost_map = CostMap()
+    costmap = CostMap()
     planner = Planner()
-    planner.get_path(0.40, 0.40, 4.18, 7.60, cost_map.map, 0.10)
-    planner.get_path(1.30, 7.30, 4.18, 7.60, cost_map.map, 0.10)
+    tracker = Tracker()
+    rx, ry = planner.get_path(0.40, 0.40, 7.60, 4.18, costmap.map, 0.50)
+    tracker.update_path(rx, ry, 0, 0)
+    rx, ry = planner.get_path(6.30, 1.30, 1.60, 1.40, costmap.map, 0.50)
+    tracker.update_path(rx, ry, 0, 0)
